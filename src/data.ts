@@ -4,6 +4,10 @@ import { Country, Sticker, Combo } from './types';
 import combo490Img from './assets/images/combo_490_figuritas_1781883440459.jpg';
 // @ts-ignore
 import albumPaniniDoradoImg from './assets/images/album_panini_dorado_10pack_1781885852008.jpg';
+// @ts-ignore
+import lote10FiguritasImg from './assets/images/lote_10_figuritas_sin_repetir_1781887720879.jpg';
+// @ts-ignore
+import superPack1000Img from './assets/images/super_pack_1000_sobres_1781888054879.jpg';
 
 export const COUNTRIES: Country[] = [
   { code: 'ARG', name: 'Argentina', flag: '🇦🇷', color: 'from-sky-400 to-white' },
@@ -188,12 +192,12 @@ export const COMBOS: Combo[] = [
   },
   {
     id: 'c-pack-10-sin-repetir-liq',
-    name: 'Combo Liquidación: 10 Figuritas Sin Repetir',
-    description: 'Lote de 10 figuritas de la Copa Mundial de la FIFA 2026, garantizadas 100% sin repetir. Conseguí este sensacional lote a valor proporcional de liquidación para avanzar de forma rápida.',
+    name: 'Lote de 10 Figuritas Copa Mundial FIFA 2026 (Garantizadas 100% Sin Repetir)',
+    description: 'Sensacional lote en liquidación de 10 figuritas de la Copa Mundial de la FIFA 2026, garantizadas 100% sin repetir. Conseguí este sensacional lote a valor promocional para avanzar tu álbum sin duplicados.',
     price: 40000,
     category: 'packs',
     rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop',
+    image: lote10FiguritasImg,
     stock: 250,
     isPopular: true,
   },
@@ -204,7 +208,7 @@ export const COMBOS: Combo[] = [
     price: 1500000,
     category: 'packs',
     rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1518063319789-7217e6706b04?w=500&auto=format&fit=crop',
+    image: superPack1000Img,
     stock: 12,
     isPopular: true,
   },
@@ -215,7 +219,7 @@ export const COMBOS: Combo[] = [
     price: 750000,
     category: 'packs',
     rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1518063319789-7217e6706b04?w=500&auto=format&fit=crop',
+    image: superPack1000Img,
     stock: 24,
     isPopular: true,
   },
