@@ -2,6 +2,8 @@ import { Country, Sticker, Combo } from './types';
 
 // @ts-ignore
 import combo490Img from './assets/images/combo_490_figuritas_1781883440459.jpg';
+// @ts-ignore
+import albumPaniniDoradoImg from './assets/images/album_panini_dorado_10pack_1781885852008.jpg';
 
 export const COUNTRIES: Country[] = [
   { code: 'ARG', name: 'Argentina', flag: '🇦🇷', color: 'from-sky-400 to-white' },
@@ -163,14 +165,14 @@ export const STICKERS: Sticker[] = [
 
 export const COMBOS: Combo[] = [
   {
-    id: 'c-album-we-are-26-pack-10',
-    name: 'Álbum Oficial Panini Copa Mundial 2026 "WE ARE 26" - Pack de 10 (Liquidación)',
-    description: 'Edición especial de liquidación con diseño oficial "WE ARE 26". Venta exclusiva en pack cerrado de 10 unidades. El precio indicado es por el pack de 10 álbumes.',
-    price: 300000,
+    id: 'c-album-dorado-tapa-dura-pack-10',
+    name: 'Álbum Oficial Panini Dorado Tapa Dura Copa Mundial 2026 - Pack de 10 (Liquidación)',
+    description: 'Edición oficial de lujo con tapas duras metalizadas doradas. Venta exclusiva en pack cerrado de 10 unidades. El precio indicado es por el pack de 10 álbumes dorados tapa dura.',
+    price: 320000,
     category: 'albums',
-    rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1544698310-74ea9d1c8258?w=500&auto=format&fit=crop',
-    stock: 120,
+    rating: 4.9,
+    image: albumPaniniDoradoImg,
+    stock: 45,
     isPopular: true,
   },
   {
