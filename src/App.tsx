@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 
 // Safe static string reference to our beautiful custom generated cover graphic
-const heroBackground = '/assets/images/delivery_banner_1781406090812.jpg';
+const heroBackground = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=1600&auto=format&fit=crop';
 
 export default function App() {
   // Navigation & Catalog view tabs
@@ -215,19 +215,11 @@ export default function App() {
     let text = `📦 *PEDIDO FIGUKIDZPANINI* (Ref: _${lastReceipt.id}_)\n`;
     text += `👤 *Cliente:* ${lastReceipt.customer}\n`;
     text += `📞 *Teléfono:* ${lastReceipt.phone}\n`;
-    text += `📍 *Entrega:* ${lastReceipt.address} (${lastReceipt.delivery})\n`;
-    
-    let pm = "Mercado Pago 📱 (Pendiente)";
-    if (lastReceipt.paymentMethod === 'mercadopago') {
-      pm = `Mercado Pago 📱 ${isPaymentConfirmed ? '✅ ¡TRANSFERENCIA ENVIADA!' : '(Pendiente - Coordinar)'}`;
-    } else if (lastReceipt.paymentMethod === 'transferencia') {
-      pm = "Transferencia Bancaria (Cualquier Entidad) 🏦";
-    }
-    text += `💳 *Método de Pago:* ${pm}\n\n`;
+    text += `📍 *Entrega:* ${lastReceipt.address} (${lastReceipt.delivery})\n\n`;
     
     text += `🛒 *Detalle de compra:*\n`;
 
-    lastReceipt.items.forEach((item: CartItem, i: number) => {
+    lastReceipt.items.forEach((item: CartItem) => {
       text += `• x${item.quantity} ${item.name} - $${(item.price * item.quantity).toLocaleString()}\n`;
       if (item.details) text += `  _(${item.details})_\n`;
     });
@@ -237,13 +229,7 @@ export default function App() {
     if (lastReceipt.shipping > 0) text += `🚚 *Envío:* $${lastReceipt.shipping.toLocaleString()}\n`;
     text += `🔥 *TOTAL:* *$${lastReceipt.total.toLocaleString()}*\n\n`;
     
-    if (lastReceipt.paymentMethod === 'mercadopago' && isPaymentConfirmed) {
-      text += `✅ *Nota:* Ya realicé la transferencia de $${lastReceipt.total.toLocaleString()} mediante Mercado Pago ¡Listo para procesar! 🚀`;
-    } else if (lastReceipt.paymentMethod === 'mercadopago') {
-      text += `¿Me podrían pasar el alias o CVU de Mercado Pago para realizar el pago de $${lastReceipt.total.toLocaleString()}? 👍⚽`;
-    } else {
-      text += `¿Me podrían pasar el alias, CBU o datos bancarios para transferir los $${lastReceipt.total.toLocaleString()}? ¡Muchas gracias! 👍⚽`;
-    }
+    text += `¡Hola! Acabo de generar mi ticket de compra en la página. ¿Me podrían pasar los datos para abonar el total de $${lastReceipt.total.toLocaleString()} y coordinar el pago/entrega? ¡Muchas gracias! 👍⚽`;
 
     const encoded = encodeURIComponent(text);
     // Open in new tab securely
@@ -281,13 +267,22 @@ export default function App() {
               <Menu className="w-5 h-5 text-purple-400" />
             </button>
 
-            <img 
-              src="/assets/images/figukids_logo_1781470906116.jpg" 
-              alt="FiGUKids PaNiNi" 
-              referrerPolicy="no-referrer"
-              className="h-14 sm:h-16 w-auto object-contain mix-blend-screen cursor-pointer transition-transform hover:scale-105"
+            <div 
+              className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-105 select-none"
               onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            />
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center shadow-lg border border-white/10 shrink-0">
+                <span className="font-mono font-black text-white text-xs tracking-wider">FK</span>
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="font-sans font-black text-sm tracking-tight leading-none text-white uppercase sm:text-base">
+                  FiGU<span className="text-yellow-400">Kids</span>
+                </span>
+                <span className="text-[8px] font-mono font-extrabold text-[#009EE3] tracking-widest uppercase mt-0.5 leading-none">
+                  PANINI OFICIAL
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Large Screen Nav Menu */}
@@ -540,15 +535,20 @@ export default function App() {
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-2 select-none">
               <div 
-                className="bg-[#0e1122] px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-md border border-purple-500/10 cursor-pointer transition-transform hover:scale-105"
+                className="bg-[#0e1122] px-4 py-2.5 rounded-xl flex items-center justify-center shadow-md border border-purple-500/10 cursor-pointer transition-transform hover:scale-105 gap-2"
                 onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               >
-                <img 
-                  src="/assets/images/figukids_logo_1781470906116.jpg" 
-                  alt="FiGUKids PaNiNi" 
-                  referrerPolicy="no-referrer"
-                  className="h-10 sm:h-12 w-auto object-contain mix-blend-screen"
-                />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center shadow-md border border-white/10 shrink-0">
+                  <span className="font-mono font-black text-white text-[10px] tracking-wider">FK</span>
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="font-sans font-black text-xs tracking-tight leading-none text-white uppercase">
+                    FiGU<span className="text-yellow-400">Kids</span>
+                  </span>
+                  <span className="text-[7.5px] font-mono font-extrabold text-[#009EE3] tracking-widest uppercase mt-0.5 leading-none">
+                    PANINI OFICIAL
+                  </span>
+                </div>
               </div>
             </div>
             <p className="text-slate-650 leading-relaxed max-w-sm">
@@ -757,117 +757,25 @@ export default function App() {
                         <span className="font-mono text-slate-700">${lastReceipt.shipping.toLocaleString()}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-base font-extrabold text-orange-650 border-t border-slate-200 pt-2.5 mt-2">
+                    <div className="flex justify-between text-base font-extrabold text-orange-600 border-t border-slate-200 pt-2.5 mt-2">
                       <span>Total Estimado:</span>
                       <span className="font-mono">${lastReceipt.total.toLocaleString()}</span>
                     </div>
                   </div>
 
-                  {/* PAYMENT METHOD SPECIFIC CARD INFORMATION */}
-                  {lastReceipt.paymentMethod === 'mercadopago' && (
-                    <div className="bg-[#0b1b24] text-white p-4 rounded-xl border border-[#009EE3]/35 space-y-3 shadow-md">
-                      <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <div className="w-5 h-5 rounded-full bg-[#009EE3] text-white font-sans font-black flex items-center justify-center text-[9px] shrink-0">MP</div>
-                          <span className="font-sans font-bold text-xs tracking-tight text-[#009EE3]">Pago con Mercado Pago</span>
-                        </div>
-                        <span className="text-[9px] bg-sky-950 text-[#009EE3] font-black px-1.5 py-0.5 rounded-full shrink-0">10% OFF</span>
-                      </div>
-
-                      <div className="space-y-2 text-[11px] font-sans text-slate-300 text-left">
-                        <p className="leading-snug text-slate-400">Copia el Alias/CVU para transferir el total de tu pedido, luego pulsa abajo para abrir tu aplicación de pago:</p>
-
-                        <div className="bg-slate-950/40 p-2 rounded-lg space-y-1 border border-white/5 font-mono text-[10px]">
-                          <div className="flex justify-between items-center">
-                            <span>Alias MP: <strong className="text-white font-bold select-all">figukids.mp</strong></span>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText("figukids.mp");
-                                setCopiedText("alias");
-                                setTimeout(() => setCopiedText(""), 2000);
-                              }}
-                              className="text-[#009EE3] hover:text-white transition-colors cursor-pointer text-[9px] bg-slate-900 px-1 py-0.5 rounded border border-white/10"
-                            >
-                              {copiedText === 'alias' ? '¡Copiado! ✓' : 'Copiar'}
-                            </button>
-                          </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <span>CVU: <strong className="text-white font-bold select-all">0000003100098765432104</strong></span>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText("0000003100098765432104");
-                                setCopiedText("cvu");
-                                setTimeout(() => setCopiedText(""), 2000);
-                              }}
-                              className="text-[#009EE3] hover:text-white transition-colors cursor-pointer text-[9px] bg-slate-900 px-1 py-0.5 rounded border border-white/10"
-                            >
-                              {copiedText === 'cvu' ? '¡Copiado! ✓' : 'Copiar'}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 pt-1 font-sans">
-                          <a
-                            href="https://www.mercadopago.com.ar"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="bg-[#009EE3] hover:bg-[#008bc8] text-white font-black py-2.5 rounded-xl text-[10px] text-center flex items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 shadow-md shadow-[#009EE3]/15"
-                          >
-                            <Smartphone className="w-3.5 h-3.5" />
-                            <span>Abrir Mercado Pago</span>
-                          </a>
-                          <a
-                            href="https://banco.bna.com.ar"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-[10px] text-center flex items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 border border-white/5"
-                          >
-                            <span>Abrir Mi Banco</span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {lastReceipt.paymentMethod === 'transferencia' && (
-                    <div className="bg-slate-100 p-3.5 rounded-xl border border-slate-200 text-left space-y-2">
-                      <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Smartphone className="w-4 h-4 text-orange-500" /> Transferencia Bancaria / Virtual
-                      </p>
-                      <div className="bg-white p-2.5 rounded-lg font-mono text-[10px] text-slate-600 border border-slate-200 space-y-1.5">
-                        <div className="flex justify-between">
-                          <span>Banco / Entidad: <strong className="text-slate-800">Personal Pay</strong></span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Titular: <strong className="text-slate-800">Lautaro Román Esquivel</strong></span>
-                        </div>
-                        <div className="flex justify-between items-center gap-1">
-                          <span>CBU/CVU: <strong className="text-slate-800">0000076500000052742798</strong></span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText("0000076500000052742798");
-                              alert("¡CBU copiado!");
-                            }}
-                            className="text-orange-600 hover:underline text-[9px] cursor-pointer shrink-0 ml-1 font-sans"
-                          >
-                            Copiar
-                          </button>
-                        </div>
-                        <div className="flex justify-between items-center gap-1">
-                          <span>Alias: <strong className="text-slate-800">figukidspanini</strong></span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText("figukidspanini");
-                              alert("¡Alias copiado!");
-                            }}
-                            className="text-orange-600 hover:underline text-[9px] cursor-pointer shrink-0 ml-1 font-sans"
-                          >
-                            Copiar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* DIRECT INSTRUCTIONS CARDS FOR THE TICKET AND WHATSAPP */}
+                  <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-xl text-left space-y-2.5 animate-fadeIn mt-4">
+                    <p className="text-xs font-black text-emerald-800 flex items-center gap-1.5 font-sans uppercase tracking-tight">
+                      <span className="flex h-2.5 w-2.5 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                      </span>
+                      ¡TICKET GENERADO CON ÉXITO!
+                    </p>
+                    <p className="text-slate-650 text-[11px] leading-relaxed font-sans">
+                      Tu pedido con referencia <strong className="text-slate-800 font-mono">#{lastReceipt.id}</strong> ha sido reservado. Ahora, haz clic en el botón de abajo para enviarnos tu ticket por WhatsApp. Te proveeremos las opciones de pago al instante y coordinaremos tu envío de forma inmediata.
+                    </p>
+                  </div>
 
                   <div className="space-y-2 pt-2">
                     <button
@@ -1003,42 +911,13 @@ export default function App() {
                         )}
                       </div>
 
-                      <div className="space-y-1.5 pt-1">
-                        <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500 block">Forma de Pago</label>
-                        <div className="grid grid-cols-1 gap-1.5">
-                          {/* Mercado Pago Choice */}
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('mercadopago')}
-                            className={`p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-between border ${
-                              paymentMethod === 'mercadopago'
-                                ? 'bg-sky-500/10 text-sky-600 border-sky-400 font-extrabold shadow-sm'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-[#009EE3] flex items-center justify-center font-black text-[9px] text-white shadow-sm font-sans">
-                                MP
-                              </div>
-                              <span className="text-slate-800">Mercado Pago</span>
-                            </div>
-                            <span className="text-[9px] bg-sky-100 text-[#009EE3] font-black px-1.5 py-0.5 rounded-full">Recomendado</span>
-                          </button>
-
-                          {/* Transfer choice */}
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('transferencia')}
-                            className={`p-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 border ${
-                              paymentMethod === 'transferencia'
-                                ? 'bg-orange-50/60 text-orange-700 border-orange-400 font-extrabold'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            <Smartphone className="w-3.5 h-3.5 text-orange-500" />
-                            <span className="text-slate-800">Cualquier Entidad Bancaria</span>
-                          </button>
-                        </div>
+                      <div className="bg-[#0b1220] border border-purple-500/10 rounded-xl p-3 text-[11px] text-slate-300 leading-snug space-y-1">
+                        <p className="font-bold text-yellow-400 flex items-center gap-1.5 text-xs">
+                          📝 Generación de Ticket Oficial
+                        </p>
+                        <p>
+                          Al finalizar la solicitud se creará tu <strong>Ticket de Compra Oficial (Ref)</strong> para coordinar el abono y envío de fútbol de manera inmediata y personalizada por WhatsApp.
+                        </p>
                       </div>
 
                       <button
@@ -1117,13 +996,17 @@ export default function App() {
             {/* Drawer Header */}
             <div className="p-5 border-b border-purple-500/10 flex items-center justify-between bg-[#0a0c1a]">
               <div className="flex items-center gap-2">
-                <img 
-                  src="/assets/images/figukids_logo_1781470906116.jpg" 
-                  alt="FiGUKids PaNiNi" 
-                  referrerPolicy="no-referrer"
-                  className="h-10 w-auto object-contain mix-blend-screen"
-                />
-                <span className="font-sans text-sm font-extrabold text-white tracking-tight">figukidspanini</span>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center shadow-lg border border-white/10 shrink-0">
+                  <span className="font-mono font-black text-white text-[10px] tracking-wider">FK</span>
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="font-sans font-black text-xs tracking-tight leading-none text-white uppercase">
+                    FiGU<span className="text-yellow-400">Kids</span>
+                  </span>
+                  <span className="text-[7.5px] font-mono font-extrabold text-[#009EE3] tracking-widest uppercase mt-0.5 leading-none">
+                    PANINI OFICIAL
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -1246,11 +1129,9 @@ export default function App() {
             <div className="bg-[#075E54] p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <img
-                    src="/assets/images/figukids_logo_1781470906116.jpg"
-                    alt="FiGUKids"
-                    className="w-10 h-10 rounded-full border border-white/20 object-contain bg-white"
-                  />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center font-bold text-white text-xs shadow-md border border-white/20 shrink-0">
+                    FK
+                  </div>
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#25D366] border-2 border-[#075E54] rounded-full"></span>
                 </div>
                 <div>
