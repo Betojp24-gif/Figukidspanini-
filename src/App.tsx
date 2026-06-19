@@ -75,10 +75,36 @@ export default function App() {
   const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'transferencia'>('mercadopago');
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState<boolean>(false);
   const [copiedText, setCopiedText] = useState<string>('');
+  const [copiedAlias, setCopiedAlias] = useState<boolean>(false);
+  const [copiedCbu, setCopiedCbu] = useState<boolean>(false);
   const [showMercadoPagoModal, setShowMercadoPagoModal] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
   const [orderProcessed, setOrderProcessed] = useState<boolean>(false);
   const [lastReceipt, setLastReceipt] = useState<any | null>(null);
+
+  const handleCopyText = (text: string, type: 'alias' | 'cbu') => {
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      if (type === 'alias') {
+        setCopiedAlias(true);
+        setTimeout(() => setCopiedAlias(false), 2000);
+      } else {
+        setCopiedCbu(true);
+        setTimeout(() => setCopiedCbu(false), 2000);
+      }
+    } catch (err) {
+      console.warn("No se pudo copiar", err);
+    }
+  };
 
   // Load cart from localStorage
   useEffect(() => {
@@ -231,7 +257,20 @@ export default function App() {
     if (lastReceipt.shipping > 0) text += `🚚 *Envío:* $${lastReceipt.shipping.toLocaleString()}\n`;
     text += `🔥 *TOTAL:* *$${lastReceipt.total.toLocaleString()}*\n\n`;
     
-    text += `¡Hola! Acabo de generar mi ticket de compra en la página. ¿Me podrían pasar los datos para abonar el total de $${lastReceipt.total.toLocaleString()} y coordinar el pago/entrega? ¡Muchas gracias! 👍⚽`;
+    text += `¡Hola! Acabo de registrar mi pedido en la página con el Ticket #${lastReceipt.id} por un total de $${lastReceipt.total.toLocaleString()}. Les envío este mensaje por WhatsApp para coordinar la entrega y adjuntar el comprobante de la transferencia realizada. ¡Muchas gracias! 👍⚽`;
+
+    const encoded = encodeURIComponent(text);
+    // Open in new tab securely
+    window.open(`https://wa.me/5491158686668?text=${encoded}`, '_blank');
+  };
+
+  const handleSendReceiptWhatsApp = () => {
+    if (!lastReceipt) return;
+
+    let text = `🧾 *COMPROBANTE DE PAGO* (Ticket: _#${lastReceipt.id}_)\n\n`;
+    text += `👤 *Cliente:* ${lastReceipt.customer}\n`;
+    text += `💰 *Monto Transferido:* *$${lastReceipt.total.toLocaleString()}*\n\n`;
+    text += `¡Hola! Aquí les adjunto el comprobante de transferencia bancaria de la app Personal Pay para el pedido *#${lastReceipt.id}* por un total de *$${lastReceipt.total.toLocaleString()}*. Quedo a la espera de la confirmación de mi envío. ¡Muchas gracias! 👋⚽`;
 
     const encoded = encodeURIComponent(text);
     // Open in new tab securely
@@ -747,6 +786,105 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* TRANSFER PAYMENT INSTRUCTIONS */}
+                  <div className="bg-orange-50/50 border border-orange-200/80 p-4 rounded-xl text-left space-y-3 animate-fadeIn mt-4 text-slate-800">
+                    <div className="flex items-center gap-2 border-b border-orange-100 pb-2">
+                      <CreditCard className="w-4.5 h-4.5 text-orange-600" />
+                      <h6 className="text-xs font-extrabold text-slate-800 uppercase font-sans tracking-tight">
+                        Datos de Pago (Transferencia Bancaria)
+                      </h6>
+                    </div>
+                    
+                    <p className="text-[11px] text-slate-650 leading-normal font-sans">
+                      Transferí el monto total del pedido a la siguiente cuenta de <strong>Personal Pay</strong> para procesar tu orden:
+                    </p>
+
+                    <div className="space-y-2 bg-white border border-slate-200 rounded-lg p-3 text-xs">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-500 font-medium font-sans">Monto a Pagar:</span>
+                        <strong className="text-sm text-orange-605 font-black font-mono">${lastReceipt.total.toLocaleString()}</strong>
+                      </div>
+                      
+                      <div className="border-t border-slate-100 my-1.5" />
+
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-500 font-medium font-sans">Entidad / Plataforma:</span>
+                        <span className="text-[#a3f234] bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-[10px] font-black tracking-tight">Personal Pay (Suma Pagos S.A.)</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-500 font-medium font-sans">Titular:</span>
+                        <span className="text-slate-800 font-bold uppercase">Martín Ledesma (FIGUKIDS)</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-500 font-medium font-sans">CUIT / CUIL:</span>
+                        <span className="text-slate-800 font-mono font-bold">20-33625309-6</span>
+                      </div>
+
+                      <div className="border-t border-slate-100 my-1.5" />
+
+                      {/* Alias Row */}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex justify-between items-center text-[11px]">
+                          <span className="text-slate-500 font-medium font-sans">Alias:</span>
+                          <span className="text-slate-800 font-mono font-black text-xs select-all">FIGUKIDS.PP</span>
+                        </div>
+                        <button
+                          onClick={() => handleCopyText('FIGUKIDS.PP', 'alias')}
+                          className={`w-full py-1.5 px-3 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                            copiedAlias 
+                              ? 'bg-green-100 text-green-700 border border-green-200' 
+                              : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                          }`}
+                        >
+                          {copiedAlias ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-green-600" />
+                              <span>¡Alias Copiado con éxito!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copiar Alias</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="border-t border-slate-100 my-1.5" />
+
+                      {/* CBU/CVU Row */}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex justify-between items-center text-[11px]">
+                          <span className="text-slate-500 font-medium font-sans">CVU / CBU:</span>
+                          <span className="text-slate-800 font-mono font-black text-xs select-all">0000003100021356789421</span>
+                        </div>
+                        <button
+                          onClick={() => handleCopyText('0000003100021356789421', 'cbu')}
+                          className={`w-full py-1.5 px-3 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                            copiedCbu 
+                              ? 'bg-green-100 text-green-700 border border-green-200' 
+                              : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                          }`}
+                        >
+                          {copiedCbu ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-green-600" />
+                              <span>¡CVU/CBU Copiado con éxito!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copiar CVU / CBU</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+
                   {/* DIRECT INSTRUCTIONS CARDS FOR THE TICKET AND WHATSAPP */}
                   <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-xl text-left space-y-2.5 animate-fadeIn mt-4">
                     <p className="text-xs font-black text-emerald-800 flex items-center gap-1.5 font-sans uppercase tracking-tight">
@@ -757,7 +895,7 @@ export default function App() {
                       ¡TICKET GENERADO CON ÉXITO!
                     </p>
                     <p className="text-slate-650 text-[11px] leading-relaxed font-sans">
-                      Tu pedido con referencia <strong className="text-slate-800 font-mono">#{lastReceipt.id}</strong> ha sido reservado. Ahora, haz clic en el botón de abajo para enviarnos tu ticket por WhatsApp. Te proveeremos las opciones de pago al instante y coordinaremos tu envío de forma inmediata.
+                      Tu pedido con referencia <strong className="text-slate-800 font-mono">#{lastReceipt.id}</strong> ha sido reservado. Realizá la transferencia por <strong className="text-slate-800 font-bold font-mono">${lastReceipt.total.toLocaleString()}</strong> a tu cuenta de <strong className="text-slate-800 font-bold">Personal Pay</strong>, y luego usá los botones de abajo para enviar el comprobante y resolver cualquier duda sobre tu envío.
                     </p>
                   </div>
 
@@ -769,6 +907,15 @@ export default function App() {
                       <MessageCircle className="w-5 h-5 fill-white stroke-none" />
                       <span>Coordinar Pedido por WhatsApp</span>
                     </button>
+                    
+                    <button
+                      onClick={handleSendReceiptWhatsApp}
+                      className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-sans font-extrabold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/10 active:scale-[0.98] cursor-pointer"
+                    >
+                      <FileText className="w-5 h-5" />
+                      <span>Enviar Comprobante de Pago</span>
+                    </button>
+
                     <button
                       onClick={() => { setOrderProcessed(false); saveCart([]); }}
                       className="w-full bg-slate-100 hover:bg-slate-200 text-slate-650 text-[11px] font-bold py-2 rounded-lg border border-slate-250 transition-colors cursor-pointer"
