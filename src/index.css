@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html, body {
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@layer utilities {
+  /* Holographic light sweep for rare cards */
+  .holo-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  .holo-effect::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.25) 45%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0.25) 55%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    transform: rotate(35deg);
+    transition: transform 0.5s ease;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .holo-effect:hover::after {
+    transform: translate(25%, 25%) rotate(35deg);
+  }
+
+  /* Fade in & Slide animations */
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+  .animate-slideLeft {
+    animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-slideRight {
+    animation: slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+

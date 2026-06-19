@@ -1,0 +1,6 @@
+{
+  "name": "figukidspanini",
+  "description": "La tienda online de figuritas del Mundial. Encuentra sobres, combos de estrellas, álbumes oficiales y completa tu lista de faltas fácilmente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
