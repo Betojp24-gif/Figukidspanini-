@@ -8,6 +8,8 @@ import albumPaniniDoradoImg from './assets/images/album_panini_dorado_10pack_178
 import lote10FiguritasImg from './assets/images/lote_10_figuritas_sin_repetir_1781887720879.jpg';
 // @ts-ignore
 import superPack1000Img from './assets/images/super_pack_1000_sobres_1781888054879.jpg';
+// @ts-ignore
+import pack10AlbumesRegImg from './assets/images/pack_10_albumes_reg_1781889420372.jpg';
 
 export const COUNTRIES: Country[] = [
   { code: 'ARG', name: 'Argentina', flag: '🇦🇷', color: 'from-sky-400 to-white' },
@@ -230,7 +232,7 @@ export const COMBOS: Combo[] = [
     price: 300000,
     category: 'albums',
     rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=500&auto=format&fit=crop',
+    image: pack10AlbumesRegImg,
     stock: 15,
     isPopular: true,
   },
