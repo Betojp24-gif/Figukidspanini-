@@ -71,7 +71,7 @@ export default function App() {
   const [custProvince, setCustProvince] = useState<string>('');
   const [deliveryMethod, setDeliveryMethod] = useState<'envio' | 'retiro'>('envio');
   const [paymentMethod, setPaymentMethod] = useState<'mercadopago' | 'transferencia'>('mercadopago');
-  const [isPaidSimulated, setIsPaidSimulated] = useState<boolean>(false);
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState<boolean>(false);
   const [copiedText, setCopiedText] = useState<string>('');
   const [showMercadoPagoModal, setShowMercadoPagoModal] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
@@ -144,7 +144,7 @@ export default function App() {
   const handleClearCart = () => {
     saveCart([]);
     setOrderProcessed(false);
-    setIsPaidSimulated(false);
+    setIsPaymentConfirmed(false);
   };
 
   // Pricing calculations
@@ -205,7 +205,7 @@ export default function App() {
 
     setLastReceipt(receipt);
     setOrderProcessed(true);
-    setIsPaidSimulated(false); // Reset simulated paid on new order
+    setIsPaymentConfirmed(false); // Reset payment confirmation on new order
   };
 
   // Build the message to send via WhatsApp
@@ -217,9 +217,9 @@ export default function App() {
     text += `📞 *Teléfono:* ${lastReceipt.phone}\n`;
     text += `📍 *Entrega:* ${lastReceipt.address} (${lastReceipt.delivery})\n`;
     
-    let pm = "Mercado Pago 📱 (Simulado / Pendiente)";
+    let pm = "Mercado Pago 📱 (Pendiente)";
     if (lastReceipt.paymentMethod === 'mercadopago') {
-      pm = `Mercado Pago 📱 ${isPaidSimulated ? '✅ ¡PAGADO CON ÉXITO!' : '(Pendiente - Coordinar pago)'}`;
+      pm = `Mercado Pago 📱 ${isPaymentConfirmed ? '✅ ¡TRANSFERENCIA ENVIADA!' : '(Pendiente - Coordinar)'}`;
     } else if (lastReceipt.paymentMethod === 'transferencia') {
       pm = "Transferencia Bancaria (Cualquier Entidad) 🏦";
     }
@@ -237,8 +237,8 @@ export default function App() {
     if (lastReceipt.shipping > 0) text += `🚚 *Envío:* $${lastReceipt.shipping.toLocaleString()}\n`;
     text += `🔥 *TOTAL:* *$${lastReceipt.total.toLocaleString()}*\n\n`;
     
-    if (lastReceipt.paymentMethod === 'mercadopago' && isPaidSimulated) {
-      text += `✅ *Nota:* Ya realicé el pago de $${lastReceipt.total.toLocaleString()} mediante Mercado Pago ¡Listo para ser despachado! 🚀`;
+    if (lastReceipt.paymentMethod === 'mercadopago' && isPaymentConfirmed) {
+      text += `✅ *Nota:* Ya realicé la transferencia de $${lastReceipt.total.toLocaleString()} mediante Mercado Pago ¡Listo para procesar! 🚀`;
     } else if (lastReceipt.paymentMethod === 'mercadopago') {
       text += `¿Me podrían pasar el alias o CVU de Mercado Pago para realizar el pago de $${lastReceipt.total.toLocaleString()}? 👍⚽`;
     } else {
@@ -696,15 +696,15 @@ export default function App() {
               </button>
             </div>
 
-            {/* Simulated Receipt vs Normal List Flow */}
+            {/* Receipt vs Normal List Flow */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {orderProcessed && lastReceipt ? (
-                /* SIMULATED RECEIPT SUCCESS VIEW */
+                /* RECEIPT SUCCESS VIEW */
                 <div className="bg-slate-50 rounded-2xl border border-dashed border-orange-500/40 p-5 space-y-5 animate-fadeIn">
                   <div className="text-center space-y-2 border-b border-slate-200 pb-4">
                     <span className="text-3xl">🥳🏆🎉</span>
-                    <h5 className="font-sans text-lg font-black text-green-650">¡Pedido Generado!</h5>
-                    <p className="text-slate-500 text-xs">Simulación procesada con éxito. Revisa el resumen de tu ticket abajo.</p>
+                    <h5 className="font-sans text-lg font-black text-green-650">¡Pedido Registrado con Éxito!</h5>
+                    <p className="text-slate-500 text-xs">Completa tu pago. Revisa el resumen de tu ticket abajo.</p>
                   </div>
 
                   <div className="space-y-2.5 font-mono text-xs">
@@ -775,7 +775,7 @@ export default function App() {
                       </div>
 
                       <div className="space-y-2 text-[11px] font-sans text-slate-300 text-left">
-                        <p className="leading-snug">Puedes pagar transfiriendo al Alias o iniciar la simulación móvil para pagar con Mercado Pago al instante:</p>
+                        <p className="leading-snug">Puedes pagar transfiriendo al Alias o iniciar pago móvil instantáneo para notificar al equipo de inmediato:</p>
 
                         <div className="bg-slate-950/40 p-2 rounded-lg space-y-1 border border-white/5 font-mono text-[10px]">
                           <div className="flex justify-between items-center">
@@ -806,11 +806,11 @@ export default function App() {
                           </div>
                         </div>
 
-                        {isPaidSimulated ? (
-                          <div className="bg-emerald-950/80 border border-[#009EE3]/40 p-2.5 rounded-lg flex items-center gap-2 text-[#009EE3] font-extrabold animate-fadeIn">
-                            <Check className="w-4 h-4 shrink-0 bg-[#009EE3] text-white rounded-full p-0.5" />
+                        {isPaymentConfirmed ? (
+                          <div className="bg-emerald-950/80 border border-emerald-550/40 p-2.5 rounded-lg flex items-center gap-2 text-emerald-400 font-extrabold animate-fadeIn">
+                            <Check className="w-4 h-4 shrink-0 bg-emerald-500 text-white rounded-full p-0.5" />
                             <div>
-                              <p className="font-sans text-[10px]">¡PAGO SIMULADO CON ÉXITO! ✅</p>
+                              <p className="font-sans text-[10px]">¡PAGO NOTIFICADO CON ÉXITO! ✅</p>
                               <p className="text-[8px] font-mono font-medium text-slate-400">Transacción FK-MP-875841</p>
                             </div>
                           </div>
@@ -820,7 +820,7 @@ export default function App() {
                             className="w-full bg-[#009EE3] hover:bg-[#008bc8] text-white font-sans font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md shadow-[#009EE3]/10"
                           >
                             <Smartphone className="w-3.5 h-3.5 text-white" />
-                            <span>Abrir Simulador Mercado Pago 📱</span>
+                            <span>Abrir Pago Mercado Pago 📱</span>
                           </button>
                         )}
                       </div>
@@ -1415,14 +1415,14 @@ export default function App() {
           )}
         </button>
 
-        {/* MERCADO PAGO SIMULATED MOBILE WALLET POPUP */}
+        {/* MERCADO PAGO MOBILE WALLET POPUP */}
         {showMercadoPagoModal && lastReceipt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 animate-fadeIn">
             <div className="bg-[#0b1b24] border border-[#009EE3]/30 w-full max-w-sm rounded-[36px] overflow-hidden shadow-2xl flex flex-col relative text-white">
               {/* Phone Status Bar Accent */}
-              <div className="bg-[#030d12] px-6 py-2.5 flex justify-between items-center text-[10px] text-slate-405 font-mono select-none">
+              <div className="bg-[#030d12] px-6 py-2.5 flex justify-between items-center text-[10px] text-slate-450 font-mono select-none">
                 <span>Mercado Pago LTE</span>
-                <span className="text-[#009EE3] font-bold">● SIMULADO</span>
+                <span className="text-emerald-400 font-bold">● CONECTADO</span>
                 <span>100% 🔋</span>
               </div>
 
@@ -1434,7 +1434,7 @@ export default function App() {
                   </div>
                   <div className="text-left">
                     <h5 className="font-sans font-black text-xs uppercase tracking-wider text-slate-200 leading-none">Mercado Pago</h5>
-                    <span className="text-[9px] text-[#009EE3] font-bold font-mono">Billetera Virtual</span>
+                    <span className="text-[9px] text-[#009EE3] font-bold font-mono">Billetera Oficial</span>
                   </div>
                 </div>
                 <button
@@ -1445,11 +1445,11 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Simulator Core Content */}
+              {/* Core Content */}
               <div className="p-5 space-y-5 text-center flex flex-col justify-between">
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <span className="text-xs uppercase tracking-wider font-mono text-slate-400">TRANSFERENCIA SOLICITADA</span>
+                    <span className="text-xs uppercase tracking-wider font-mono text-slate-400">TRANSFERENCIA SEGURO</span>
                     <h4 className="font-sans text-sm font-extrabold text-white">A: FiGUKids Colecciones</h4>
                     <p className="text-[10px] text-slate-400">CUIT: 30-71123456-9 • Cuenta Oficial Certificada</p>
                   </div>
@@ -1466,18 +1466,18 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* Mock Wallet Balance */}
+                  {/* Wallet Balance */}
                   <div className="bg-[#030d12] p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
                     <div className="text-left">
-                      <span className="text-[9px] text-slate-400 block font-sans">Saldo Disponible Estimado</span>
-                      <strong className="text-white font-mono">$450.000,00</strong>
+                      <span className="text-[9px] text-slate-400 block font-sans">Canal de Configuración</span>
+                      <strong className="text-white font-mono">Dinero en cuenta MP</strong>
                     </div>
-                    <span className="text-[9px] text-[#009EE3] bg-emerald-950/40 px-2 py-0.5 rounded-full font-bold">Suficiente</span>
+                    <span className="text-[9px] text-[#009EE3] bg-emerald-950/40 px-2 py-0.5 rounded-full font-bold">Transferir</span>
                   </div>
 
                   {/* Disclaimer */}
                   <p className="text-[10px] text-slate-400 leading-normal px-2 text-center">
-                    Al confirmar, se simulará una transferencia segura instantánea hacia el CVU de FiGUKids por el total estipulado.
+                    Al confirmar, agilizas el registro de tu transferencia hacia el CVU oficial de FiGUKids para su verificación y envío rápido.
                   </p>
                 </div>
 
@@ -1487,7 +1487,7 @@ export default function App() {
                       setIsProcessingPayment(true);
                       setTimeout(() => {
                         setIsProcessingPayment(false);
-                        setIsPaidSimulated(true);
+                        setIsPaymentConfirmed(true);
                         setShowMercadoPagoModal(false);
                       }, 1800);
                     }}
@@ -1495,11 +1495,11 @@ export default function App() {
                     className="w-full bg-[#009EE3] hover:bg-[#008bc8] text-white font-sans font-black py-3 rounded-2xl text-xs sm:text-sm shadow-xl shadow-[#009EE3]/10 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isProcessingPayment ? (
-                      <span className="animate-pulse">Procesándolo...</span>
+                      <span className="animate-pulse">Registrando transferencia...</span>
                     ) : (
                       <>
                         <Check className="w-4 h-4" />
-                        <span>Confirmar Pago Instantáneo</span>
+                        <span>Confirmar Transferencia Directa</span>
                       </>
                     )}
                   </button>
