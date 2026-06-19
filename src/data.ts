@@ -1,5 +1,8 @@
 import { Country, Sticker, Combo } from './types';
 
+// @ts-ignore
+import combo490Img from './assets/images/combo_490_figuritas_1781883440459.jpg';
+
 export const COUNTRIES: Country[] = [
   { code: 'ARG', name: 'Argentina', flag: '🇦🇷', color: 'from-sky-400 to-white' },
   { code: 'BRA', name: 'Brasil', flag: '🇧🇷', color: 'from-yellow-400 to-green-600' },
@@ -177,7 +180,7 @@ export const COMBOS: Combo[] = [
     price: 2000000,
     category: 'packs',
     rating: 5.0,
-    image: '/src/assets/images/combo_490_figuritas_1781883440459.jpg',
+    image: combo490Img,
     stock: 8,
     isPopular: true,
   },

@@ -6,7 +6,8 @@ import CustomStickersForm from './components/CustomStickersForm';
 import ProductCard from './components/ProductCard';
 import PlayerCard from './components/PlayerCard';
 import FeaturedProducts from './components/FeaturedProducts';
-const logoImg = "/src/assets/images/figukids_logo_dark_1781882447782.jpg";
+// @ts-ignore
+import logoImg from './assets/images/figukids_logo_dark_1781882447782.jpg';
 
 // Import Icons
 import {
