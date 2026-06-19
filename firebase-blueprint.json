@@ -1,0 +1,44 @@
+{
+  "collections": {
+    "users": {
+      "schema": {
+        "userId": "string",
+        "email": "string",
+        "displayName": "string",
+        "photoURL": "string",
+        "createdAt": "timestamp"
+      },
+      "indexes": []
+    },
+    "carts": {
+      "schema": {
+        "userId": "string",
+        "items": "array",
+        "updatedAt": "timestamp"
+      },
+      "indexes": []
+    },
+    "receipts": {
+      "schema": {
+        "id": "string",
+        "userId": "string",
+        "customer": "string",
+        "phone": "string",
+        "address": "string",
+        "items": "array",
+        "total": "number",
+        "shipping": "number",
+        "paymentMethod": "string",
+        "createdAt": "timestamp"
+      },
+      "indexes": [
+        {
+          "fields": [
+            { "fieldPath": "userId", "order": "ASCENDING" },
+            { "fieldPath": "createdAt", "order": "DESCENDING" }
+          ]
+        }
+      ]
+    }
+  }
+}

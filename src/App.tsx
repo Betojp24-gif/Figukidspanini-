@@ -9,6 +9,29 @@ import FeaturedProducts from './components/FeaturedProducts';
 // @ts-ignore
 import logoImg from './assets/images/figukids_logo_dark_1781882447782.jpg';
 
+// Firebase Authentication & Firestore imports
+import { auth, db, googleProvider } from './firebase';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  signInWithPopup, 
+  updateProfile,
+  sendPasswordResetEmail,
+  User 
+} from 'firebase/auth';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy 
+} from 'firebase/firestore';
+
 // Import Icons
 import {
   ShoppingBag,
@@ -34,7 +57,11 @@ import {
   CreditCard,
   Smartphone,
   Mail,
-  MapPin
+  MapPin,
+  LogOut,
+  LogIn,
+  User as UserIcon,
+  Loader2
 } from 'lucide-react';
 
 // Safe static string reference to our beautiful custom generated cover graphic
@@ -82,6 +109,130 @@ export default function App() {
   const [orderProcessed, setOrderProcessed] = useState<boolean>(false);
   const [lastReceipt, setLastReceipt] = useState<any | null>(null);
 
+  // Firebase Auth & User profile state
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [authEmail, setAuthEmail] = useState<string>('');
+  const [authPassword, setAuthPassword] = useState<string>('');
+  const [authName, setAuthName] = useState<string>('');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authError, setAuthError] = useState<string>('');
+  const [authSubmitting, setAuthSubmitting] = useState<boolean>(false);
+
+  // User History state (control de tickets)
+  const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState<boolean>(false);
+
+  // Sync / retrieve cart from Firestore
+  const syncCartFromFirestore = async (uid: string) => {
+    try {
+      const cartDocRef = doc(db, 'carts', uid);
+      const cartDoc = await getDoc(cartDocRef);
+      if (cartDoc.exists()) {
+        const cloudCart = cartDoc.data().items as CartItem[];
+        if (cloudCart && cloudCart.length > 0) {
+          setCart(cloudCart);
+          localStorage.setItem('figukidsPanini_cart', JSON.stringify(cloudCart));
+        } else if (cart.length > 0) {
+          await setDoc(cartDocRef, {
+            userId: uid,
+            items: cart,
+            updatedAt: new Date().toISOString()
+          });
+        }
+      } else if (cart.length > 0) {
+        await setDoc(cartDocRef, {
+          userId: uid,
+          items: cart,
+          updatedAt: new Date().toISOString()
+        });
+      }
+    } catch (e) {
+      console.error("Error syncing cart from firestore:", e);
+    }
+  };
+
+  // Sync / save current cart to Firestore if user logged in
+  const saveCartToFirestore = async (uid: string, items: CartItem[]) => {
+    try {
+      const cartDocRef = doc(db, 'carts', uid);
+      await setDoc(cartDocRef, {
+        userId: uid,
+        items: items,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Error saving cart to firestore:", e);
+    }
+  };
+
+  // Fetch past orders from Firestore
+  const fetchUserOrdersFromFirestore = async (uid: string) => {
+    setIsLoadingOrders(true);
+    try {
+      const receiptsRef = collection(db, 'receipts');
+      const q = query(
+        receiptsRef, 
+        where('userId', '==', uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const ordersList: any[] = [];
+      querySnapshot.forEach((doc) => {
+        ordersList.push({ ...doc.data(), docId: doc.id });
+      });
+      ordersList.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      setUserOrders(ordersList);
+    } catch (e) {
+      console.error("Error fetching orders from firestore:", e);
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  };
+
+  // Firebase Auth listener
+  useEffect(() => {
+    let isMounted = true;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!isMounted) return;
+      setCurrentUser(user);
+      setIsAuthLoading(false);
+      
+      if (user) {
+        if (user.displayName && !custName) setCustName(user.displayName);
+        
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+              userId: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+              createdAt: new Date().toISOString()
+            });
+          }
+          await syncCartFromFirestore(user.uid);
+          await fetchUserOrdersFromFirestore(user.uid);
+        } catch (e) {
+          console.error("Error setting/getting user profile:", e);
+        }
+      } else {
+        setUserOrders([]);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
   const handleCopyText = (text: string, type: 'alias' | 'cbu') => {
     try {
       if (navigator.clipboard) {
@@ -123,6 +274,9 @@ export default function App() {
     setCart(newCart);
     try {
       localStorage.setItem('figukidsPanini_cart', JSON.stringify(newCart));
+      if (currentUser) {
+        saveCartToFirestore(currentUser.uid, newCart);
+      }
     } catch (e) {
       console.error("Error saving cart", e);
     }
@@ -229,11 +383,98 @@ export default function App() {
       shipping: shippingFee,
       total: cartTotal,
       paymentMethod: paymentMethod,
+      userId: currentUser ? currentUser.uid : 'anonymous',
+      createdAt: new Date().toISOString()
     };
 
     setLastReceipt(receipt);
+
+    // Save to Firestore if user logged in
+    if (currentUser) {
+      const receiptDocRef = doc(db, 'receipts', receiptId);
+      setDoc(receiptDocRef, receipt)
+        .then(() => {
+          fetchUserOrdersFromFirestore(currentUser.uid);
+        })
+        .catch(err => {
+          console.error("Error saving receipt to Firestore:", err);
+        });
+    }
+
     setOrderProcessed(true);
     setIsPaymentConfirmed(false); // Reset payment confirmation on new order
+  };
+
+  // Google Sign In handler
+  const handleGoogleSignIn = async () => {
+    setAuthSubmitting(true);
+    setAuthError('');
+    try {
+      await signInWithPopup(auth, googleProvider);
+      setShowAuthModal(false);
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/popup-blocked') {
+        setAuthError("El navegador bloqueó la ventana de Google. Por favor, permití los popups o abrí la página en una nueva pestaña.");
+      } else {
+        setAuthError("No se pudo iniciar sesión con Google. Intentá de nuevo o registrate con correo.");
+      }
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  // Email Authentication submit handler
+  const handleEmailAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail || !authPassword) {
+      setAuthError("Por favor ingresá todos los campos.");
+      return;
+    }
+    if (authMode === 'register' && !authName) {
+      setAuthError("Por favor ingresá tu nombre completo.");
+      return;
+    }
+
+    setAuthSubmitting(true);
+    setAuthError('');
+
+    try {
+      if (authMode === 'login') {
+        await signInWithEmailAndPassword(auth, authEmail, authPassword);
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+        await updateProfile(userCredential.user, {
+          displayName: authName
+        });
+        
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        await setDoc(userDocRef, {
+          userId: userCredential.user.uid,
+          email: authEmail,
+          displayName: authName,
+          photoURL: '',
+          createdAt: new Date().toISOString()
+        });
+      }
+      setShowAuthModal(false);
+      setAuthEmail('');
+      setAuthPassword('');
+      setAuthName('');
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setAuthError("Correo o contraseña incorrectos.");
+      } else if (err.code === 'auth/email-already-in-use') {
+        setAuthError("Este correo ya está registrado.");
+      } else if (err.code === 'auth/weak-password') {
+        setAuthError("La contraseña debe tener al menos 6 caracteres.");
+      } else {
+        setAuthError("Ha ocurrido un error inesperado al procesar: " + (err.message || ''));
+      }
+    } finally {
+      setAuthSubmitting(false);
+    }
   };
 
   // Build the message to send via WhatsApp
@@ -340,8 +581,83 @@ export default function App() {
             <a href="#quick-cotizador" className="hover:text-purple-400 transition-colors">Cotizador Rápido</a>
           </nav>
 
-          {/* Cart Trigger Badge */}
+          {/* User Sign-In Profile Button and Cart Trigger Badge */}
           <div className="flex items-center gap-3">
+            {isAuthLoading ? (
+              <div className="bg-[#13172e] border border-purple-500/10 p-2.5 rounded-2xl flex items-center justify-center">
+                <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+              </div>
+            ) : currentUser ? (
+              <div className="relative group shrink-0">
+                <button
+                  className="bg-[#13172e] hover:bg-[#1a203f] border border-purple-500/20 text-slate-100 rounded-2xl px-3 py-2.5 flex items-center gap-2 transition-all shadow-md cursor-pointer text-xs md:text-sm"
+                  title={`Sesión iniciada como ${currentUser.displayName || currentUser.email}`}
+                >
+                  {currentUser.photoURL ? (
+                    <img
+                      src={currentUser.photoURL}
+                      alt={currentUser.displayName || "Usuario"}
+                      referrerPolicy="no-referrer"
+                      className="w-5 h-5 rounded-full object-cover border border-[#a3f234]"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-[#a3f234]/15 flex items-center justify-center font-bold text-[#a3f234] text-[10px]">
+                      {(currentUser.displayName || currentUser.email || 'U').substring(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="max-w-[80px] md:max-w-[120px] truncate hidden sm:inline font-bold">
+                    {currentUser.displayName || currentUser.email?.split('@')[0]}
+                  </span>
+                </button>
+                {/* Popover Hover/Click menu containing Account name, Tickets, and sign out */}
+                <div className="absolute right-0 top-full mt-2 w-56 bg-[#0f1122] border border-purple-500/20 rounded-2xl shadow-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="pb-2 border-b border-slate-800 text-[11px] text-slate-400 mb-2">
+                    <p className="font-extrabold text-[#a3f234] truncate">
+                      {currentUser.displayName || 'Coleccionista'}
+                    </p>
+                    <p className="truncate text-slate-400 font-mono text-[10px] mt-0.5">
+                      {currentUser.email}
+                    </p>
+                  </div>
+                  
+                  {userOrders.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('tracker');
+                        setTimeout(() => {
+                          document.getElementById('user-orders-control-panel')?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      }}
+                      className="w-full text-left px-2 py-1.5 rounded-lg text-[11px] text-slate-300 hover:bg-slate-800 hover:text-white transition-all mb-1.5 flex items-center gap-1.5 cursor-pointer font-bold"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-[#a3f234]" />
+                      <span>Ver {userOrders.length} Tickets Guardados</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => signOut(auth)}
+                    className="w-full text-left px-2 py-1.5 rounded-lg text-[11px] text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-1.5 cursor-pointer font-bold"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-red-400" />
+                    <span>Cerrar Sesión</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setAuthError('');
+                  setShowAuthModal(true);
+                }}
+                className="bg-purple-600 hover:bg-purple-500 border border-purple-500/15 text-white font-bold rounded-2xl px-3.5 py-2.5 flex items-center gap-1.5 transition-all shadow-md text-xs cursor-pointer active:scale-95 shrink-0"
+              >
+                <LogIn className="w-4 h-4 text-white" />
+                <span className="hidden xs:inline">Ingresar / Registrarse</span>
+                <span className="xs:hidden inline">Entrar</span>
+              </button>
+            )}
+
             <button
               onClick={() => setIsCartOpen(true)}
               className="bg-[#13172e] hover:bg-[#1a203f] border border-purple-500/15 text-slate-100 rounded-2xl px-4 py-2.5 flex items-center gap-2.5 transition-all shadow-md active:scale-95 relative cursor-pointer"
@@ -547,19 +863,172 @@ export default function App() {
             )}
           </div>
         )}
+
+        {/* ACTIVE TRACKER AND CONTROL OF SAVED TICKETS TAB PANEL */}
+        {activeTab === 'tracker' && (
+          <div className="space-y-10 animate-fadeIn text-slate-100">
+            {/* Control Panel Header */}
+            <div className="text-center max-w-2xl mx-auto space-y-3">
+              <h3 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
+                📖 Control de Álbum y Mis Tickets
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Llevá un control total de tus figuritas faltantes, calculá presupuestos al instante y gestioná tus pedidos guardados.
+              </p>
+            </div>
+
+            {/* My Tickets Control Panel (Only if logged in) */}
+            {currentUser && (
+              <div id="user-orders-control-panel" className="bg-[#0f1122]/80 border border-purple-500/20 backdrop-blur-md rounded-3xl p-6 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-500/10 pb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-[#a3f234]" />
+                      <span>Mis Tickets de Compra Guardados</span>
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5">Historial oficial de pedidos vinculados a tu cuenta.</p>
+                  </div>
+                  <div className="bg-[#1a1e36] text-[10px] text-slate-300 font-mono font-black border border-purple-500/10 px-3 py-1.5 rounded-xl uppercase shrink-0">
+                    Sincronización en la Nube Activada 🟢
+                  </div>
+                </div>
+
+                {isLoadingOrders ? (
+                  <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                    <span className="text-xs text-slate-100 font-medium font-bold">Buscando tus comprobantes guardados...</span>
+                  </div>
+                ) : userOrders.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {userOrders.map((order) => (
+                      <div key={order.id} className="bg-[#141830]/90 border border-slate-800 hover:border-purple-500/30 rounded-2xl p-5 space-y-4 transition-all hover:shadow-lg relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#a3f234]/5 to-transparent pointer-events-none rounded-bl-full" />
+                        
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="bg-purple-900/40 text-[#a3f234] font-mono text-[10px] font-black tracking-wider px-2.5 py-1 rounded-lg border border-purple-800/60 shadow-sm">
+                              TICKET #{order.id}
+                            </span>
+                            <span className="text-slate-400 text-[10px] block mt-1.5 font-medium">{order.date || new Date(order.createdAt).toLocaleDateString('es-ES')}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-[#a3f234] font-black font-mono text-sm sm:text-base block">${order.total?.toLocaleString() || order.subtotal?.toLocaleString()}</span>
+                            <span className="text-[9px] text-slate-450 font-sans block mt-0.5">{order.items ? `${order.items.length} productos` : 'Cotización'}</span>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-slate-800/80 my-3" />
+
+                        <div className="space-y-2 text-xs">
+                          <p className="text-slate-300 truncate"><strong className="text-slate-400">Cliente:</strong> {order.customer}</p>
+                          <p className="text-slate-300 truncate"><strong className="text-slate-400">Teléfono:</strong> {order.phone}</p>
+                          {order.address && (
+                            <p className="text-slate-300 truncate"><strong className="text-slate-400">Entrega:</strong> {order.address}</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5 bg-[#0a0c16] rounded-xl p-3 text-[11px] max-h-24 overflow-y-auto">
+                          {order.items && order.items.map((it: any, index: number) => (
+                            <div key={index} className="flex justify-between text-slate-450">
+                              <span className="truncate pr-2">x{it.quantity} {it.name}</span>
+                              <span className="font-mono text-[10px] text-slate-300 font-extrabold shrink-0">${(it.price * it.quantity).toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Order management actions */}
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <button
+                            onClick={() => {
+                              let text = `📦 *RE-COORDINAR PEDIDO FIGUKIDZ* (Ticket: _${order.id}_)\n`;
+                              text += `👤 *Cliente:* ${order.customer}\n`;
+                              text += `🔥 *TOTAL:* *$${order.total?.toLocaleString()}*\n\n`;
+                              text += `¡Hola! Me comunico para coordinar el ticket guardado #${order.id} por un total de $${order.total?.toLocaleString()}. ¿Me confirmarían su estado? 👍⚽`;
+                              const encoded = encodeURIComponent(text);
+                              window.open(`https://wa.me/5491158686668?text=${encoded}`, '_blank');
+                            }}
+                            className="bg-[#1b1e35] hover:bg-[#a3f234]/15 text-slate-200 hover:text-[#a3f234] px-3 py-2 rounded-xl text-[10px] font-black border border-[#2d3257] hover:border-purple-500/30 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>Coordinar</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              setLastReceipt(order);
+                              setOrderProcessed(true);
+                              setIsCartOpen(true);
+                            }}
+                            className="bg-[#a3f234] hover:bg-[#b5ff47] text-slate-900 px-3 py-2 rounded-xl text-[10px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Ver Comprobante</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 border border-dashed border-slate-800 rounded-2xl bg-[#141830]/35">
+                    <span className="text-3xl">🧾</span>
+                    <h5 className="font-sans text-xs font-bold text-slate-300 mt-2">No registraste ningún Ticket aún</h5>
+                    <p className="text-slate-550 text-[11px] mt-1">Cuando realices compras e inicies un pedido, se verán guardados aquí.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* If not logged in, prompt sign in to persist and track */}
+            {!currentUser && (
+              <div className="bg-[#0f1122]/95 border border-purple-500/20 rounded-3xl p-6 text-center max-w-xl mx-auto space-y-4 shadow-xl">
+                <div className="w-12 h-12 rounded-full bg-purple-500/15 flex items-center justify-center mx-auto border border-purple-500/20">
+                  <UserIcon className="w-6 h-6 text-purple-400" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-base font-extrabold text-white uppercase tracking-tight">Sincronizá tu Cuenta para el Control</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                    Registrate gratis con tu correo o Gmail para guardar tu historial de tickets, persistir tu lista de faltantes y acceder a tus pedidos desde cualquier dispositivo.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setAuthError('');
+                    setShowAuthModal(true);
+                  }}
+                  className="bg-purple-600 hover:bg-purple-500 border border-purple-500/10 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer inline-flex items-center gap-1.5 active:scale-95"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Iniciar Sesión / Registrarse</span>
+                </button>
+              </div>
+            )}
+
+            {/* Interactive forms grids inside tracker view */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <ChecklistTracker onAddCustomListToCart={handleAddCustomListToCart} />
+              </div>
+              <div className="lg:col-span-1">
+                <CustomStickersForm onAddCustomListToCart={handleAddCustomListToCart} />
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* QUICK COTIZADOR FORM & ALBUM CHECKLIST SECTION */}
-      <section className="px-4 sm:px-6 max-w-7xl mx-auto py-12 border-t border-purple-500/10 bg-[#0c0d1e]/20" id="quick-cotizador">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <ChecklistTracker onAddCustomListToCart={handleAddCustomListToCart} />
+      {/* QUICK COTIZADOR FORM & ALBUM CHECKLIST SECTION (HIDDEN ON TRACKER VIEW) */}
+      {activeTab !== 'tracker' && (
+        <section className="px-4 sm:px-6 max-w-7xl mx-auto py-12 border-t border-purple-500/10 bg-[#0c0d1e]/20" id="quick-cotizador">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ChecklistTracker onAddCustomListToCart={handleAddCustomListToCart} />
+            </div>
+            <div className="lg:col-span-1">
+              <CustomStickersForm onAddCustomListToCart={handleAddCustomListToCart} />
+            </div>
           </div>
-          <div className="lg:col-span-1">
-            <CustomStickersForm onAddCustomListToCart={handleAddCustomListToCart} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* FOOTER */}
       <footer className="bg-white border-t border-slate-200 py-12 px-4 sm:px-6 mt-16 text-slate-600 text-xs shadow-md">
@@ -1418,6 +1887,153 @@ export default function App() {
         </button>
 
       </div>
+
+      {/* AUTHENTICATION MODAL OVERLAY */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn transition-all">
+          <div className="bg-[#0f1122] border border-purple-500/30 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative animate-scaleUp text-slate-100">
+            
+            {/* Header branding card */}
+            <div className="bg-gradient-to-r from-purple-800 to-indigo-950 p-6 text-center relative border-b border-purple-500/10">
+              <button 
+                onClick={() => setShowAuthModal(false)}
+                className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 p-1.5 rounded-full transition-all cursor-pointer border-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <div className="mx-auto w-12 h-12 rounded-full bg-[#a3f234]/15 flex items-center justify-center mb-2.5">
+                <span className="text-xl">⚽</span>
+              </div>
+              <h3 className="text-lg font-black text-white uppercase tracking-tight">Portal de Coleccionistas</h3>
+              <p className="text-xs text-purple-200 mt-1">Registrate o accedé para guardar tus Álbumes y comprobar tus envíos.</p>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Google Sign In Option */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={authSubmitting}
+                className="w-full bg-white hover:bg-slate-50 text-slate-800 font-sans font-extrabold py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border border-slate-200 cursor-pointer active:scale-95 disabled:opacity-50 text-xs sm:text-sm"
+              >
+                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>Ingresar con tu Cuenta de Google</span>
+              </button>
+
+              <div className="flex items-center justify-center gap-3">
+                <span className="w-full h-px bg-slate-800" />
+                <span className="text-[10px] text-slate-500 font-mono tracking-widest uppercase">o con correo</span>
+                <span className="w-full h-px bg-slate-800" />
+              </div>
+
+              {/* Segmented controller mode switch */}
+              <div className="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
+                  className={`py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${authMode === 'login' ? 'bg-[#1b1c35] text-[#a3f234] shadow-sm' : 'text-slate-400 hover:text-white bg-transparent border-0'}`}
+                >
+                  Iniciar Sesión
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('register'); setAuthError(''); }}
+                  className={`py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${authMode === 'register' ? 'bg-[#1b1c35] text-[#a3f234] shadow-sm' : 'text-slate-400 hover:text-white bg-transparent border-0'}`}
+                >
+                  Registrarse
+                </button>
+              </div>
+
+              {/* Email/Password Form */}
+              <form onSubmit={handleEmailAuthSubmit} className="space-y-3.5" h-id="auth-form">
+                {authMode === 'register' && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">Nombre Completo</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej. Juan Pérez"
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      className="w-full bg-[#13172e] border border-slate-800 focus:border-purple-500 text-xs text-white placeholder-slate-500 rounded-xl px-3 py-2.5 outline-none transition-all font-sans"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">Email de Coleccionista</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="coleccionista@gmail.com"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full bg-[#13172e] border border-slate-800 focus:border-ring text-xs text-white placeholder-slate-500 rounded-xl px-3 py-2.5 outline-none transition-all font-sans"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[10px] uppercase font-mono tracking-wider font-extrabold text-slate-400">
+                    <label>Contraseña</label>
+                    {authMode === 'login' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!authEmail) {
+                            setAuthError("Ingresá tu correo arriba primero.");
+                            return;
+                          }
+                          sendPasswordResetEmail(auth, authEmail)
+                            .then(() => setAuthError("Te enviamos un correo para restablecer tu contraseña. Revisá tu Spam."))
+                            .catch(e => setAuthError("Error: " + e.message));
+                        }}
+                        className="text-[#a3f234] hover:underline cursor-pointer lowercase bg-transparent border-0 p-0"
+                      >
+                        ¿La olvidaste?
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    placeholder="mínimo 6 caracteres"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="w-full bg-[#13172e] border border-slate-800 focus:border-ring text-xs text-white placeholder-slate-500 rounded-xl px-3 py-2.5 outline-none transition-all font-sans"
+                  />
+                </div>
+
+                {authError && (
+                  <div className={`p-3 rounded-xl text-xs leading-relaxed font-sans ${authError.includes('enviamos') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                    {authError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={authSubmitting}
+                  className="w-full bg-[#a3f234] hover:bg-[#b5ff47] disabled:bg-slate-800 text-slate-900 disabled:text-slate-500 font-sans font-black py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer text-xs uppercase tracking-tight flex items-center justify-center gap-2 border-0"
+                >
+                  {authSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <span>{authMode === 'login' ? 'Ingresar a mi Cuenta' : 'Crear mi Cuenta Gratis'}</span>
+                  )}
+                </button>
+              </form>
+            </div>
+            
+          </div>
+        </div>
+      )}
 
     </div>
   );
