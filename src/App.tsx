@@ -767,19 +767,19 @@ export default function App() {
                   {lastReceipt.paymentMethod === 'mercadopago' && (
                     <div className="bg-[#0b1b24] text-white p-4 rounded-xl border border-[#009EE3]/35 space-y-3 shadow-md">
                       <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-5 h-5 rounded-full bg-[#009EE3] text-white font-sans font-black flex items-center justify-center text-[9px]">MP</div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <div className="w-5 h-5 rounded-full bg-[#009EE3] text-white font-sans font-black flex items-center justify-center text-[9px] shrink-0">MP</div>
                           <span className="font-sans font-bold text-xs tracking-tight text-[#009EE3]">Pago con Mercado Pago</span>
                         </div>
-                        <span className="text-[9px] bg-sky-950 text-[#009EE3] font-black px-1.5 py-0.5 rounded-full">10% OFF</span>
+                        <span className="text-[9px] bg-sky-950 text-[#009EE3] font-black px-1.5 py-0.5 rounded-full shrink-0">10% OFF</span>
                       </div>
 
                       <div className="space-y-2 text-[11px] font-sans text-slate-300 text-left">
-                        <p className="leading-snug">Puedes pagar transfiriendo al Alias o iniciar pago móvil instantáneo para notificar al equipo de inmediato:</p>
+                        <p className="leading-snug text-slate-400">Copia el Alias/CVU para transferir el total de tu pedido, luego pulsa abajo para abrir tu aplicación de pago:</p>
 
                         <div className="bg-slate-950/40 p-2 rounded-lg space-y-1 border border-white/5 font-mono text-[10px]">
                           <div className="flex justify-between items-center">
-                            <span>Alias MP: <strong className="text-white">figukids.mp</strong></span>
+                            <span>Alias MP: <strong className="text-white font-bold select-all">figukids.mp</strong></span>
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText("figukids.mp");
@@ -792,7 +792,7 @@ export default function App() {
                             </button>
                           </div>
                           <div className="flex justify-between items-center mt-1">
-                            <span>CVU: <strong className="text-white">0000003100098765432104</strong></span>
+                            <span>CVU: <strong className="text-white font-bold select-all">0000003100098765432104</strong></span>
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText("0000003100098765432104");
@@ -806,23 +806,25 @@ export default function App() {
                           </div>
                         </div>
 
-                        {isPaymentConfirmed ? (
-                          <div className="bg-emerald-950/80 border border-emerald-550/40 p-2.5 rounded-lg flex items-center gap-2 text-emerald-400 font-extrabold animate-fadeIn">
-                            <Check className="w-4 h-4 shrink-0 bg-emerald-500 text-white rounded-full p-0.5" />
-                            <div>
-                              <p className="font-sans text-[10px]">¡PAGO NOTIFICADO CON ÉXITO! ✅</p>
-                              <p className="text-[8px] font-mono font-medium text-slate-400">Transacción FK-MP-875841</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setShowMercadoPagoModal(true)}
-                            className="w-full bg-[#009EE3] hover:bg-[#008bc8] text-white font-sans font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md shadow-[#009EE3]/10"
+                        <div className="grid grid-cols-2 gap-2 pt-1 font-sans">
+                          <a
+                            href="https://www.mercadopago.com.ar"
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="bg-[#009EE3] hover:bg-[#008bc8] text-white font-black py-2.5 rounded-xl text-[10px] text-center flex items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 shadow-md shadow-[#009EE3]/15"
                           >
-                            <Smartphone className="w-3.5 h-3.5 text-white" />
-                            <span>Abrir Pago Mercado Pago 📱</span>
-                          </button>
-                        )}
+                            <Smartphone className="w-3.5 h-3.5" />
+                            <span>Abrir Mercado Pago</span>
+                          </a>
+                          <a
+                            href="https://banco.bna.com.ar"
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-[10px] text-center flex items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 border border-white/5"
+                          >
+                            <span>Abrir Mi Banco</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1414,112 +1416,6 @@ export default function App() {
             </>
           )}
         </button>
-
-        {/* MERCADO PAGO MOBILE WALLET POPUP */}
-        {showMercadoPagoModal && lastReceipt && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 animate-fadeIn">
-            <div className="bg-[#0b1b24] border border-[#009EE3]/30 w-full max-w-sm rounded-[36px] overflow-hidden shadow-2xl flex flex-col relative text-white">
-              {/* Phone Status Bar Accent */}
-              <div className="bg-[#030d12] px-6 py-2.5 flex justify-between items-center text-[10px] text-slate-450 font-mono select-none">
-                <span>Mercado Pago LTE</span>
-                <span className="text-emerald-400 font-bold">● CONECTADO</span>
-                <span>100% 🔋</span>
-              </div>
-
-              {/* Modal App Header */}
-              <div className="p-5 bg-gradient-to-b from-[#0e2735] to-[#0a1e2b] border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#009EE3] to-[#00c5ff] flex items-center justify-center font-black text-white text-xs font-sans shadow-md">
-                    MP
-                  </div>
-                  <div className="text-left">
-                    <h5 className="font-sans font-black text-xs uppercase tracking-wider text-slate-200 leading-none">Mercado Pago</h5>
-                    <span className="text-[9px] text-[#009EE3] font-bold font-mono">Billetera Oficial</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowMercadoPagoModal(false)}
-                  className="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white p-2 rounded-xl transition-colors cursor-pointer border border-white/5"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Core Content */}
-              <div className="p-5 space-y-5 text-center flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <span className="text-xs uppercase tracking-wider font-mono text-slate-400">TRANSFERENCIA SEGURO</span>
-                    <h4 className="font-sans text-sm font-extrabold text-white">A: FiGUKids Colecciones</h4>
-                    <p className="text-[10px] text-slate-400">CUIT: 30-71123456-9 • Cuenta Oficial Certificada</p>
-                  </div>
-
-                  <div className="bg-[#0e2735] p-4 rounded-2xl border border-white/5 space-y-1">
-                    <span className="text-[10px] font-mono text-[#009EE3] uppercase font-bold tracking-widest block">Monto total</span>
-                    <div className="text-3xl font-mono font-black text-white">
-                      ${lastReceipt.total.toLocaleString()}
-                    </div>
-                    {discountActive && (
-                      <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold inline-block font-sans">
-                        ¡Incluye beneficio de reintegro!
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Wallet Balance */}
-                  <div className="bg-[#030d12] p-3 rounded-xl border border-white/5 flex justify-between items-center text-xs">
-                    <div className="text-left">
-                      <span className="text-[9px] text-slate-400 block font-sans">Canal de Configuración</span>
-                      <strong className="text-white font-mono">Dinero en cuenta MP</strong>
-                    </div>
-                    <span className="text-[9px] text-[#009EE3] bg-emerald-950/40 px-2 py-0.5 rounded-full font-bold">Transferir</span>
-                  </div>
-
-                  {/* Disclaimer */}
-                  <p className="text-[10px] text-slate-400 leading-normal px-2 text-center">
-                    Al confirmar, agilizas el registro de tu transferencia hacia el CVU oficial de FiGUKids para su verificación y envío rápido.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      setIsProcessingPayment(true);
-                      setTimeout(() => {
-                        setIsProcessingPayment(false);
-                        setIsPaymentConfirmed(true);
-                        setShowMercadoPagoModal(false);
-                      }, 1800);
-                    }}
-                    disabled={isProcessingPayment}
-                    className="w-full bg-[#009EE3] hover:bg-[#008bc8] text-white font-sans font-black py-3 rounded-2xl text-xs sm:text-sm shadow-xl shadow-[#009EE3]/10 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isProcessingPayment ? (
-                      <span className="animate-pulse">Registrando transferencia...</span>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        <span>Confirmar Transferencia Directa</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setShowMercadoPagoModal(false)}
-                    disabled={isProcessingPayment}
-                    className="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-sans font-semibold py-2 rounded-xl text-xs border border-white/5 cursor-pointer disabled:opacity-50"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-
-              {/* Phone Footer Bar Accent */}
-              <div className="bg-[#030d12] py-2 flex justify-center border-t border-slate-900 select-none">
-                <div className="w-20 h-1 bg-slate-700 rounded-full font-sans"></div>
-              </div>
-            </div>
-          </div>
-        )}
 
       </div>
 
