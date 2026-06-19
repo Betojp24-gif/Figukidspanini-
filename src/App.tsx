@@ -787,98 +787,89 @@ export default function App() {
                   </div>
 
                   {/* TRANSFER PAYMENT INSTRUCTIONS */}
-                  <div className="bg-orange-50/50 border border-orange-200/80 p-4 rounded-xl text-left space-y-3 animate-fadeIn mt-4 text-slate-800">
-                    <div className="flex items-center gap-2 border-b border-orange-100 pb-2">
-                      <CreditCard className="w-4.5 h-4.5 text-orange-600" />
-                      <h6 className="text-xs font-extrabold text-slate-800 uppercase font-sans tracking-tight">
-                        Datos de Pago (Transferencia Bancaria)
-                      </h6>
+                  <div className="bg-slate-900 border border-slate-700/80 p-4.5 rounded-2xl text-left space-y-4 animate-fadeIn mt-4 text-slate-100 shadow-xl relative overflow-hidden">
+                    {/* Subtle design ornament background */}
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-purple-500/10 to-transparent pointer-events-none rounded-bl-full" />
+                    
+                    <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                      <div className="bg-purple-500/10 p-1.5 rounded-lg border border-purple-500/20">
+                        <CreditCard className="w-4.5 h-4.5 text-[#a3f234]" />
+                      </div>
+                      <div>
+                        <h6 className="text-[11px] font-extrabold text-[#a3f234] uppercase font-sans tracking-wider leading-none">
+                          Datos de Pago para Abonar
+                        </h6>
+                        <span className="text-[9px] text-slate-400 font-medium font-sans mt-0.5 block">Transferencia Directa (Personal Pay)</span>
+                      </div>
                     </div>
                     
-                    <p className="text-[11px] text-slate-650 leading-normal font-sans">
-                      Transferí el monto total del pedido a la siguiente cuenta de <strong>Personal Pay</strong> para procesar tu orden:
+                    <p className="text-[11px] text-slate-300 leading-normal font-sans">
+                      Realizá la transferencia del total desde tu billetera a la cuenta oficial de <strong>Personal Pay</strong> para procesar el envío:
                     </p>
 
-                    <div className="space-y-2 bg-white border border-slate-200 rounded-lg p-3 text-xs">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-medium font-sans">Monto a Pagar:</span>
-                        <strong className="text-sm text-orange-605 font-black font-mono">${lastReceipt.total.toLocaleString()}</strong>
-                      </div>
-                      
-                      <div className="border-t border-slate-100 my-1.5" />
+                    <div className="space-y-3">
+                      {/* Account details rows */}
+                      <div className="bg-[#12152a] ring-1 ring-slate-800 rounded-xl p-3 space-y-2.5 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400 font-medium">Monto a Transferir:</span>
+                          <strong className="text-sm text-[#a3f234] font-black font-mono">
+                            ${lastReceipt.total.toLocaleString()}
+                          </strong>
+                        </div>
+                        
+                        <div className="border-t border-slate-800/80" />
 
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-medium font-sans">Entidad / Plataforma:</span>
-                        <span className="text-[#a3f234] bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-[10px] font-black tracking-tight">Personal Pay (Suma Pagos S.A.)</span>
-                      </div>
-
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-medium font-sans">Titular:</span>
-                        <span className="text-slate-800 font-bold uppercase">Martín Ledesma (FIGUKIDS)</span>
-                      </div>
-
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-medium font-sans">CUIT / CUIL:</span>
-                        <span className="text-slate-800 font-mono font-bold">20-33625309-6</span>
-                      </div>
-
-                      <div className="border-t border-slate-100 my-1.5" />
-
-                      {/* Alias Row */}
-                      <div className="flex flex-col gap-1">
                         <div className="flex justify-between items-center text-[11px]">
-                          <span className="text-slate-500 font-medium font-sans">Alias:</span>
-                          <span className="text-slate-800 font-mono font-black text-xs select-all">FIGUKIDS.PP</span>
+                          <span className="text-slate-400 font-medium">Plataforma/Banco:</span>
+                          <span className="text-slate-200 font-bold bg-[#1d2242] px-2 py-0.5 rounded text-[10px] border border-[#2e376a]">Personal Pay (Suma S.A.)</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-[11px]">
+                          <span className="text-slate-400 font-medium">Titular:</span>
+                          <span className="text-slate-100 font-extrabold uppercase">Martín Ledesma (FIGUKIDS)</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-[11px]">
+                          <span className="text-slate-400 font-medium">CUIT / CUIL:</span>
+                          <span className="text-slate-200 font-mono font-bold">20-33625309-6</span>
+                        </div>
+                      </div>
+
+                      {/* COPY ALIAS MODULE */}
+                      <div className="flex items-center justify-between bg-[#12152a] p-2.5 rounded-xl border border-slate-800">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase font-sans">Alias</span>
+                          <span className="text-white font-mono font-black text-sm mt-0.5 select-all leading-none">FIGUKIDS.PP</span>
                         </div>
                         <button
                           onClick={() => handleCopyText('FIGUKIDS.PP', 'alias')}
-                          className={`w-full py-1.5 px-3 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                          className={`py-1.5 px-3 rounded-lg text-[10px] font-extrabold flex items-center gap-1.5 transition-all text-slate-900 cursor-pointer ${
                             copiedAlias 
-                              ? 'bg-green-100 text-green-700 border border-green-200' 
-                              : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                              ? 'bg-green-400 font-black' 
+                              : 'bg-[#a3f234] hover:bg-[#b5ff47] shadow-sm shadow-[#a3f234]/10'
                           }`}
                         >
-                          {copiedAlias ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-green-600" />
-                              <span>¡Alias Copiado con éxito!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>Copiar Alias</span>
-                            </>
-                          )}
+                          {copiedAlias ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>{copiedAlias ? '¡Copiado!' : 'Copiar Alias'}</span>
                         </button>
                       </div>
 
-                      <div className="border-t border-slate-100 my-1.5" />
-
-                      {/* CBU/CVU Row */}
-                      <div className="flex flex-col gap-1">
-                        <div className="flex justify-between items-center text-[11px]">
-                          <span className="text-slate-500 font-medium font-sans">CVU / CBU:</span>
-                          <span className="text-slate-800 font-mono font-black text-xs select-all">0000003100021356789421</span>
+                      {/* COPY CVU MODULE */}
+                      <div className="flex items-center justify-between bg-[#12152a] p-2.5 rounded-xl border border-slate-800">
+                        <div className="flex flex-col min-w-0 pr-2">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase font-sans">CVU de Personal Pay</span>
+                          <span className="text-white font-mono font-black text-xs mt-0.5 select-all truncate leading-none">0000003100021356789421</span>
                         </div>
                         <button
                           onClick={() => handleCopyText('0000003100021356789421', 'cbu')}
-                          className={`w-full py-1.5 px-3 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                          className={`py-1.5 px-3 rounded-lg text-[10px] font-extrabold flex items-center gap-1.5 transition-all text-slate-900 cursor-pointer select-none shrink-0 ${
                             copiedCbu 
-                              ? 'bg-green-100 text-green-700 border border-green-200' 
-                              : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                              ? 'bg-green-400 font-black' 
+                              : 'bg-[#a3f234] hover:bg-[#b5ff47] shadow-sm shadow-[#a3f234]/10'
                           }`}
                         >
-                          {copiedCbu ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-green-600" />
-                              <span>¡CVU/CBU Copiado con éxito!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>Copiar CVU / CBU</span>
-                            </>
-                          )}
+                          {copiedCbu ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>{copiedCbu ? '¡Copiado!' : 'Copiar CVU'}</span>
                         </button>
                       </div>
 
