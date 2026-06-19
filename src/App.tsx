@@ -6,6 +6,7 @@ import CustomStickersForm from './components/CustomStickersForm';
 import ProductCard from './components/ProductCard';
 import PlayerCard from './components/PlayerCard';
 import FeaturedProducts from './components/FeaturedProducts';
+const logoImg = "/src/assets/images/figukids_logo_dark_1781882447782.jpg";
 
 // Import Icons
 import {
@@ -267,22 +268,13 @@ export default function App() {
               <Menu className="w-5 h-5 text-purple-400" />
             </button>
 
-            <div 
-              className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-105 select-none"
+            <img 
+              src={logoImg} 
+              alt="FiGUKids PaNiNi" 
+              referrerPolicy="no-referrer"
+              className="h-14 sm:h-16 w-auto object-contain cursor-pointer transition-transform hover:scale-105 select-none"
               onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center shadow-lg border border-white/10 shrink-0">
-                <span className="font-mono font-black text-white text-xs tracking-wider">FK</span>
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="font-sans font-black text-sm tracking-tight leading-none text-white uppercase sm:text-base">
-                  FiGU<span className="text-yellow-400">Kids</span>
-                </span>
-                <span className="text-[8px] font-mono font-extrabold text-[#009EE3] tracking-widest uppercase mt-0.5 leading-none">
-                  PANINI OFICIAL
-                </span>
-              </div>
-            </div>
+            />
           </div>
 
           {/* Large Screen Nav Menu */}
@@ -534,22 +526,13 @@ export default function App() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-2 select-none">
-              <div 
-                className="bg-[#0e1122] px-4 py-2.5 rounded-xl flex items-center justify-center shadow-md border border-purple-500/10 cursor-pointer transition-transform hover:scale-105 gap-2"
+              <img 
+                src={logoImg} 
+                alt="FiGUKids PaNiNi" 
+                referrerPolicy="no-referrer"
+                className="h-14 w-auto object-contain cursor-pointer transition-transform hover:scale-105"
                 onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center shadow-md border border-white/10 shrink-0">
-                  <span className="font-mono font-black text-white text-[10px] tracking-wider">FK</span>
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="font-sans font-black text-xs tracking-tight leading-none text-white uppercase">
-                    FiGU<span className="text-yellow-400">Kids</span>
-                  </span>
-                  <span className="text-[7.5px] font-mono font-extrabold text-[#009EE3] tracking-widest uppercase mt-0.5 leading-none">
-                    PANINI OFICIAL
-                  </span>
-                </div>
-              </div>
+              />
             </div>
             <p className="text-slate-650 leading-relaxed max-w-sm">
               La plataforma premium para coleccionistas de barajitas y figuritas de fútbol del Mundial. Coordinación automatizada directa e integraciones lúdicas sin salir de casa.
@@ -995,19 +978,13 @@ export default function App() {
             
             {/* Drawer Header */}
             <div className="p-5 border-b border-purple-500/10 flex items-center justify-between bg-[#0a0c1a]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center shadow-lg border border-white/10 shrink-0">
-                  <span className="font-mono font-black text-white text-[10px] tracking-wider">FK</span>
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="font-sans font-black text-xs tracking-tight leading-none text-white uppercase">
-                    FiGU<span className="text-yellow-400">Kids</span>
-                  </span>
-                  <span className="text-[7.5px] font-mono font-extrabold text-[#009EE3] tracking-widest uppercase mt-0.5 leading-none">
-                    PANINI OFICIAL
-                  </span>
-                </div>
-              </div>
+              <img 
+                src={logoImg} 
+                alt="FiGUKids PaNiNi" 
+                referrerPolicy="no-referrer"
+                className="h-10 w-auto object-contain cursor-pointer transition-transform hover:scale-105 select-none"
+                onClick={() => { setActiveTab('catalog'); setIsMobileMenuOpen(false); }}
+              />
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="bg-[#13172e] hover:bg-[#1a203f] text-slate-300 hover:text-white p-2 rounded-xl border border-purple-500/15 transition-colors cursor-pointer shadow-sm"
@@ -1129,9 +1106,12 @@ export default function App() {
             <div className="bg-[#075E54] p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 via-pink-600 to-yellow-500 flex items-center justify-center font-bold text-white text-xs shadow-md border border-white/20 shrink-0">
-                    FK
-                  </div>
+                  <img 
+                    src={logoImg} 
+                    alt="FK" 
+                    referrerPolicy="no-referrer"
+                    className="w-10 h-10 rounded-full object-cover shadow-md border border-white/20 shrink-0 bg-white"
+                  />
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#25D366] border-2 border-[#075E54] rounded-full"></span>
                 </div>
                 <div>

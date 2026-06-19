@@ -177,7 +177,7 @@ export const COMBOS: Combo[] = [
     price: 2000000,
     category: 'packs',
     rating: 5.0,
-    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop',
+    image: '/src/assets/images/combo_490_figuritas_1781883440459.jpg',
     stock: 8,
     isPopular: true,
   },

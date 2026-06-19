@@ -1,6 +1,0 @@
-/app/applet/src/assets/images/adrenalyn_display_box_1781406121678.jpg
-/app/applet/src/assets/images/adrenalyn_promo_poster_1781406138149.jpg
-/app/applet/src/assets/images/album_2026_cover_1781406105361.jpg
-/app/applet/src/assets/images/delivery_banner_1781406090812.jpg
-/app/applet/src/assets/images/soccer_stickers_hero_1781386568122.jpg
-/app/applet/src/assets/images/zonakids_hero_banner_1781405369151.jpg
