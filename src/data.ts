@@ -10,6 +10,8 @@ import lote10FiguritasImg from './assets/images/lote_10_figuritas_sin_repetir_17
 import superPack1000Img from './assets/images/super_pack_1000_sobres_1781888054879.jpg';
 // @ts-ignore
 import pack10AlbumesRegImg from './assets/images/pack_10_albumes_reg_1781889420372.jpg';
+// @ts-ignore
+import pack10AlbumesAmarillosImg from './assets/images/pack_10_albumes_amarillos_1781896800557.jpg';
 
 export const COUNTRIES: Country[] = [
   { code: 'ARG', name: 'Argentina', flag: '🇦🇷', color: 'from-sky-400 to-white' },
@@ -232,7 +234,7 @@ export const COMBOS: Combo[] = [
     price: 300000,
     category: 'albums',
     rating: 4.9,
-    image: pack10AlbumesRegImg,
+    image: pack10AlbumesAmarillosImg,
     stock: 15,
     isPopular: true,
   },
