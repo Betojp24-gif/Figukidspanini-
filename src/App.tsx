@@ -1196,12 +1196,12 @@ export default function App() {
                   <div className="text-center space-y-2 border-b border-slate-200 pb-4">
                     <span className="text-3xl">🥳🏆🎉</span>
                     <h5 className="font-sans text-lg font-black text-green-650">¡Pedido Registrado con Éxito!</h5>
-                    <p className="text-slate-500 text-xs">Completa tu pago. Revisa el resumen de tu ticket abajo.</p>
+                    <p className="text-slate-500 text-xs">Completa tu pago. Revisa el resumen de tu pedido abajo.</p>
                   </div>
 
                   <div className="space-y-2.5 font-mono text-xs">
                     <div className="flex justify-between text-slate-500">
-                      <span>TICKET REF:</span>
+                      <span>PEDIDO REF:</span>
                       <span className="text-slate-900 font-extrabold">{lastReceipt.id}</span>
                     </div>
                     <div className="flex justify-between text-slate-500">
@@ -1295,12 +1295,12 @@ export default function App() {
 
                         <div className="flex justify-between items-center text-[11px]">
                           <span className="text-slate-400 font-medium">Titular:</span>
-                          <span className="text-slate-100 font-extrabold uppercase">Martín Ledesma (FIGUKIDS)</span>
+                          <span className="text-slate-100 font-extrabold uppercase">Lautaro Roman Esquivel</span>
                         </div>
 
                         <div className="flex justify-between items-center text-[11px]">
                           <span className="text-slate-400 font-medium">CUIT / CUIL:</span>
-                          <span className="text-slate-200 font-mono font-bold">20-33625309-6</span>
+                          <span className="text-slate-200 font-mono font-bold">20-49351874-8</span>
                         </div>
                       </div>
 
@@ -1327,10 +1327,10 @@ export default function App() {
                       <div className="flex items-center justify-between bg-[#12152a] p-2.5 rounded-xl border border-slate-800">
                         <div className="flex flex-col min-w-0 pr-2">
                           <span className="text-[9px] text-slate-400 font-bold uppercase font-sans">CVU de Personal Pay</span>
-                          <span className="text-white font-mono font-black text-xs mt-0.5 select-all truncate leading-none">0000003100021356789421</span>
+                          <span className="text-white font-mono font-black text-xs mt-0.5 select-all truncate leading-none">0000076500000052742798</span>
                         </div>
                         <button
-                          onClick={() => handleCopyText('0000003100021356789421', 'cbu')}
+                          onClick={() => handleCopyText('0000076500000052742798', 'cbu')}
                           className={`py-1.5 px-3 rounded-lg text-[10px] font-extrabold flex items-center gap-1.5 transition-all text-slate-900 cursor-pointer select-none shrink-0 ${
                             copiedCbu 
                               ? 'bg-green-400 font-black' 
@@ -1352,10 +1352,10 @@ export default function App() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                       </span>
-                      ¡TICKET GENERADO CON ÉXITO!
+                      ¡PEDIDO GENERADO CON ÉXITO!
                     </p>
                     <p className="text-slate-650 text-[11px] leading-relaxed font-sans">
-                      Tu pedido con referencia <strong className="text-slate-800 font-mono">#{lastReceipt.id}</strong> ha sido reservado. Realizá la transferencia por <strong className="text-slate-800 font-bold font-mono">${lastReceipt.total.toLocaleString()}</strong> a tu cuenta de <strong className="text-slate-800 font-bold">Personal Pay</strong>, y luego usá los botones de abajo para enviar el comprobante y resolver cualquier duda sobre tu envío.
+                      Pedido generado con éxito (Ref: <strong className="text-slate-800 font-mono">#{lastReceipt.id}</strong>), una vez abonado se procederá con su preparación. Si quiere puede consultar o coordinar su entrega por WhatsApp.
                     </p>
                   </div>
 
@@ -1368,14 +1368,6 @@ export default function App() {
                       <span>Coordinar Pedido por WhatsApp</span>
                     </button>
                     
-                    <button
-                      onClick={handleSendReceiptWhatsApp}
-                      className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-sans font-extrabold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/10 active:scale-[0.98] cursor-pointer"
-                    >
-                      <FileText className="w-5 h-5" />
-                      <span>Enviar Comprobante de Pago</span>
-                    </button>
-
                     <button
                       onClick={() => { setOrderProcessed(false); saveCart([]); }}
                       className="w-full bg-slate-100 hover:bg-slate-200 text-slate-650 text-[11px] font-bold py-2 rounded-lg border border-slate-250 transition-colors cursor-pointer"
@@ -1504,10 +1496,10 @@ export default function App() {
 
                       <div className="bg-[#0b1220] border border-purple-500/10 rounded-xl p-3 text-[11px] text-slate-300 leading-snug space-y-1">
                         <p className="font-bold text-yellow-400 flex items-center gap-1.5 text-xs">
-                          📝 Generación de Ticket Oficial
+                          📝 Generación de Pedido Oficial
                         </p>
                         <p>
-                          Al finalizar la solicitud se creará tu <strong>Ticket de Compra Oficial (Ref)</strong> para coordinar el abono y envío de fútbol de manera inmediata y personalizada por WhatsApp.
+                          Al finalizar la solicitud se creará tu <strong>Pedido de Compra Oficial (Ref)</strong> para coordinar el abono y envío de fútbol de manera inmediata y personalizada por WhatsApp.
                         </p>
                       </div>
 
@@ -1515,7 +1507,7 @@ export default function App() {
                         type="submit"
                         className="w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-sans text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer mt-1"
                       >
-                        Generar Ticket de Compra 🧾
+                        Generar Pedido de Compra 🧾
                       </button>
                     </form>
                   </div>
