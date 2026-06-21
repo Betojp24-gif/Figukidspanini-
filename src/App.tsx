@@ -95,6 +95,7 @@ export default function App() {
   // Order state
   const [custName, setCustName] = useState<string>('');
   const [custPhone, setCustPhone] = useState<string>('');
+  const [custEmail, setCustEmail] = useState<string>('');
   const [custAddress, setCustAddress] = useState<string>('');
   const [custLocality, setCustLocality] = useState<string>('');
   const [custProvince, setCustProvince] = useState<string>('');
@@ -362,8 +363,8 @@ export default function App() {
   // Create WhatsApp message and simulate receipt
   const handleProcessOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!custName || !custPhone) {
-      alert("Por favor rellena tu nombre y teléfono para procesar.");
+    if (!custName || !custPhone || !custEmail) {
+      alert("Por favor rellena tu nombre, teléfono y mail de envío para procesar.");
       return;
     }
 
@@ -375,6 +376,7 @@ export default function App() {
       date: today,
       customer: custName,
       phone: custPhone,
+      email: custEmail,
       address: `${custAddress}, ${custLocality}, ${custProvince}`,
       delivery: 'Envío rápido a domicilio',
       items: [...cart],
@@ -389,17 +391,17 @@ export default function App() {
 
     setLastReceipt(receipt);
 
-    // Save to Firestore if user logged in
-    if (currentUser) {
-      const receiptDocRef = doc(db, 'receipts', receiptId);
-      setDoc(receiptDocRef, receipt)
-        .then(() => {
+    // Save to Firestore for both logged in or guest checkout
+    const receiptDocRef = doc(db, 'receipts', receiptId);
+    setDoc(receiptDocRef, receipt)
+      .then(() => {
+        if (currentUser) {
           fetchUserOrdersFromFirestore(currentUser.uid);
-        })
-        .catch(err => {
-          console.error("Error saving receipt to Firestore:", err);
-        });
-    }
+        }
+      })
+      .catch(err => {
+        console.error("Error saving receipt to Firestore:", err);
+      });
 
     setOrderProcessed(true);
     setIsPaymentConfirmed(false); // Reset payment confirmation on new order
@@ -655,19 +657,7 @@ export default function App() {
                   </button>
                 </div>
               </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setAuthError('');
-                  setShowAuthModal(true);
-                }}
-                className="bg-purple-600 hover:bg-purple-500 border border-purple-500/15 text-white font-bold rounded-2xl px-3.5 py-2.5 flex items-center gap-1.5 transition-all shadow-md text-xs cursor-pointer active:scale-95 shrink-0"
-              >
-                <LogIn className="w-4 h-4 text-white" />
-                <span className="hidden xs:inline">Ingresar / Registrarse</span>
-                <span className="xs:hidden inline">Entrar</span>
-              </button>
-            )}
+            ) : null}
 
             <button
               onClick={() => setIsCartOpen(true)}
@@ -989,30 +979,7 @@ export default function App() {
               </div>
             )}
 
-            {/* If not logged in, prompt sign in to persist and track */}
-            {!currentUser && (
-              <div className="bg-[#0f1122]/95 border border-purple-500/20 rounded-3xl p-6 text-center max-w-xl mx-auto space-y-4 shadow-xl">
-                <div className="w-12 h-12 rounded-full bg-purple-500/15 flex items-center justify-center mx-auto border border-purple-500/20">
-                  <UserIcon className="w-6 h-6 text-purple-400" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-base font-extrabold text-white uppercase tracking-tight">Sincronizá tu Cuenta para el Control</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                    Registrate gratis con tu correo o Gmail para guardar tu historial de tickets, persistir tu lista de faltantes y acceder a tus pedidos desde cualquier dispositivo.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setAuthError('');
-                    setShowAuthModal(true);
-                  }}
-                  className="bg-purple-600 hover:bg-purple-500 border border-purple-500/10 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer inline-flex items-center gap-1.5 active:scale-95"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Iniciar Sesión / Registrarse</span>
-                </button>
-              </div>
-            )}
+            {/* Tracker control page content */}
 
             {/* Interactive forms grids inside tracker view */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1473,6 +1440,19 @@ export default function App() {
                           placeholder="Teléfono / WhatsApp de contacto *"
                           className="w-full bg-white border border-slate-200 font-sans focus:border-orange-500 text-slate-800 placeholder-slate-400 rounded-xl px-3 py-1.5 text-xs outline-none transition-colors"
                         />
+                        <div className="space-y-1">
+                          <input
+                            type="email"
+                            required
+                            value={custEmail}
+                            onChange={(e) => setCustEmail(e.target.value)}
+                            placeholder="Gmail o Correo Electrónico *"
+                            className="w-full bg-white border border-slate-200 font-sans focus:border-orange-500 text-slate-800 placeholder-slate-400 rounded-xl px-3 py-1.5 text-xs outline-none transition-colors"
+                          />
+                          <span className="text-[10px] text-slate-500 block pl-1 font-medium select-none leading-none">
+                            📧 Para el envío de tu factura y comprobante.
+                          </span>
+                        </div>
                         {deliveryMethod === 'envio' && (
                           <div className="space-y-2">
                             <input
