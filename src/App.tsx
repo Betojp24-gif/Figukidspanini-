@@ -415,9 +415,9 @@ export default function App() {
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-blocked') {
-        setAuthError("El navegador bloqueó la ventana de Google. Por favor, permití los popups o abrí la página en una nueva pestaña.");
+        setAuthError("El navegador bloqueó la ventana de Google. Por favor habilitá los popups o hacé clic en el botón 'Abrir en nueva pestaña' de arriba a la derecha para iniciar sesión.");
       } else {
-        setAuthError("No se pudo iniciar sesión con Google. Intentá de nuevo o registrate con correo.");
+        setAuthError("No se pudo iniciar sesión con Google. Si estás usando la vista previa de AI Studio, los navegadores bloquean la autenticación dentro de un iframe. Hacé clic en 'Abrir en nueva pestaña' en la esquina superior derecha para poder ingresar con Google, o registrate con tu correo.");
       }
     } finally {
       setAuthSubmitting(false);
@@ -636,7 +636,18 @@ export default function App() {
                   )}
 
                   <button
-                    onClick={() => signOut(auth)}
+                    onClick={async () => {
+                      try {
+                        await signOut(auth);
+                        setCart([]);
+                        localStorage.removeItem('figukidsPanini_cart');
+                        localStorage.removeItem('figukidzPanini_cart');
+                        setOrderProcessed(false);
+                        setIsPaymentConfirmed(false);
+                      } catch (e) {
+                        console.error("Error al cerrar sesión:", e);
+                      }
+                    }}
                     className="w-full text-left px-2 py-1.5 rounded-lg text-[11px] text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-1.5 cursor-pointer font-bold"
                   >
                     <LogOut className="w-3.5 h-3.5 text-red-400" />
@@ -1916,6 +1927,10 @@ export default function App() {
                 </svg>
                 <span>Ingresar con tu Cuenta de Google</span>
               </button>
+
+              <p className="text-[10px] text-slate-400 text-center leading-relaxed">
+                💡 <strong>Nota sobre Google en Vista Previa:</strong> Por restricciones de seguridad, los navegadores bloquean la autenticación de Google dentro de un iframe. Hacé clic en <strong>"Abrir en nueva pestaña"</strong> (arriba a la derecha del simulador) para poder usar Google, o podés registrarte/ingresar abajo utilizando tu cuenta de correo.
+              </p>
 
               <div className="flex items-center justify-center gap-3">
                 <span className="w-full h-px bg-slate-800" />
