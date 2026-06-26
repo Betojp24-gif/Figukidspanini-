@@ -23,7 +23,7 @@ service cloud.firestore {
 
     // Receipts Collection rules
     match /receipts/{receiptId} {
-      allow create: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow update, delete: if false;
     }

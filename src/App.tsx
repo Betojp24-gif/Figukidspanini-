@@ -95,7 +95,6 @@ export default function App() {
   // Order state
   const [custName, setCustName] = useState<string>('');
   const [custPhone, setCustPhone] = useState<string>('');
-  const [custEmail, setCustEmail] = useState<string>('');
   const [custAddress, setCustAddress] = useState<string>('');
   const [custLocality, setCustLocality] = useState<string>('');
   const [custProvince, setCustProvince] = useState<string>('');
@@ -363,8 +362,8 @@ export default function App() {
   // Create WhatsApp message and simulate receipt
   const handleProcessOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!custName || !custPhone || !custEmail) {
-      alert("Por favor rellena tu nombre, teléfono y mail de envío para procesar.");
+    if (!custName || !custPhone) {
+      alert("Por favor rellena tu nombre y teléfono para procesar.");
       return;
     }
 
@@ -376,7 +375,6 @@ export default function App() {
       date: today,
       customer: custName,
       phone: custPhone,
-      email: custEmail,
       address: `${custAddress}, ${custLocality}, ${custProvince}`,
       delivery: 'Envío rápido a domicilio',
       items: [...cart],
@@ -391,17 +389,17 @@ export default function App() {
 
     setLastReceipt(receipt);
 
-    // Save to Firestore for both logged in or guest checkout
-    const receiptDocRef = doc(db, 'receipts', receiptId);
-    setDoc(receiptDocRef, receipt)
-      .then(() => {
-        if (currentUser) {
+    // Save to Firestore if user logged in
+    if (currentUser) {
+      const receiptDocRef = doc(db, 'receipts', receiptId);
+      setDoc(receiptDocRef, receipt)
+        .then(() => {
           fetchUserOrdersFromFirestore(currentUser.uid);
-        }
-      })
-      .catch(err => {
-        console.error("Error saving receipt to Firestore:", err);
-      });
+        })
+        .catch(err => {
+          console.error("Error saving receipt to Firestore:", err);
+        });
+    }
 
     setOrderProcessed(true);
     setIsPaymentConfirmed(false); // Reset payment confirmation on new order
@@ -657,7 +655,19 @@ export default function App() {
                   </button>
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <button
+                onClick={() => {
+                  setAuthError('');
+                  setShowAuthModal(true);
+                }}
+                className="bg-purple-600 hover:bg-purple-500 border border-purple-500/15 text-white font-bold rounded-2xl px-3.5 py-2.5 flex items-center gap-1.5 transition-all shadow-md text-xs cursor-pointer active:scale-95 shrink-0"
+              >
+                <LogIn className="w-4 h-4 text-white" />
+                <span className="hidden xs:inline">Ingresar / Registrarse</span>
+                <span className="xs:hidden inline">Entrar</span>
+              </button>
+            )}
 
             <button
               onClick={() => setIsCartOpen(true)}
@@ -979,7 +989,30 @@ export default function App() {
               </div>
             )}
 
-            {/* Tracker control page content */}
+            {/* If not logged in, prompt sign in to persist and track */}
+            {!currentUser && (
+              <div className="bg-[#0f1122]/95 border border-purple-500/20 rounded-3xl p-6 text-center max-w-xl mx-auto space-y-4 shadow-xl">
+                <div className="w-12 h-12 rounded-full bg-purple-500/15 flex items-center justify-center mx-auto border border-purple-500/20">
+                  <UserIcon className="w-6 h-6 text-purple-400" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-base font-extrabold text-white uppercase tracking-tight">Sincronizá tu Cuenta para el Control</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                    Registrate gratis con tu correo o Gmail para guardar tu historial de tickets, persistir tu lista de faltantes y acceder a tus pedidos desde cualquier dispositivo.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setAuthError('');
+                    setShowAuthModal(true);
+                  }}
+                  className="bg-purple-600 hover:bg-purple-500 border border-purple-500/10 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer inline-flex items-center gap-1.5 active:scale-95"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Iniciar Sesión / Registrarse</span>
+                </button>
+              </div>
+            )}
 
             {/* Interactive forms grids inside tracker view */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1009,72 +1042,75 @@ export default function App() {
       )}
 
       {/* FOOTER */}
-      <footer className="bg-white border-t border-slate-200 py-12 px-4 sm:px-6 mt-16 text-slate-600 text-xs shadow-md">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
+      <footer className="bg-[#0e1122] border-t border-purple-500/15 py-16 px-4 sm:px-6 mt-16 text-slate-400 text-xs shadow-2xl relative overflow-hidden">
+        {/* Subtle background glow decorator */}
+        <div className="absolute -bottom-10 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 mb-12 relative z-10">
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-2 select-none">
               <img 
                 src={logoImg} 
                 alt="FiGUKids PaNiNi" 
                 referrerPolicy="no-referrer"
-                className="h-14 w-auto object-contain cursor-pointer transition-transform hover:scale-105"
+                className="h-16 w-auto object-contain cursor-pointer transition-transform hover:scale-105"
                 onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               />
             </div>
-            <p className="text-slate-650 leading-relaxed max-w-sm">
+            <p className="text-slate-400 leading-relaxed max-w-sm font-sans">
               La plataforma premium para coleccionistas de barajitas y figuritas de fútbol del Mundial. Coordinación automatizada directa e integraciones lúdicas sin salir de casa.
             </p>
           </div>
 
           <div className="md:col-span-2 space-y-3">
-            <h5 className="font-bold text-slate-700 text-sm uppercase font-mono">Accesos Rápidos</h5>
+            <h5 className="font-extrabold text-white text-xs uppercase font-mono tracking-wider">Accesos Rápidos</h5>
             <div className="flex flex-col gap-2 font-medium">
-              <button onClick={() => setActiveTab('catalog')} className="text-left hover:text-orange-500 transition-colors">📦 Álbumes y Combos</button>
-              <button onClick={() => setActiveTab('players')} className="text-left hover:text-orange-500 transition-colors">⭐ Jugadores Estrella</button>
-              <button onClick={() => setActiveTab('tracker')} className="text-left hover:text-orange-500 transition-colors">📖 Control de Álbum</button>
+              <button onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left hover:text-purple-400 transition-colors cursor-pointer">📦 Álbumes y Combos</button>
+              <button onClick={() => { setActiveTab('players'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left hover:text-purple-400 transition-colors cursor-pointer">⭐ Jugadores Estrella</button>
+              <button onClick={() => { setActiveTab('tracker'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left hover:text-purple-400 transition-colors cursor-pointer">📖 Control de Álbum</button>
             </div>
           </div>
 
           <div className="md:col-span-3 space-y-3">
-            <h5 className="font-bold text-slate-700 text-sm uppercase font-mono">Seguridad y Garantía</h5>
-            <p className="text-slate-650 leading-relaxed">
-              Todos nuestros productos son originales, distribuidos directamente por Panini oficiales. Los envíos viajan con embalaje acolchado especial anti-arrugas.
+            <h5 className="font-extrabold text-white text-xs uppercase font-mono tracking-wider">Seguridad y Garantía</h5>
+            <p className="text-slate-400 leading-relaxed font-sans">
+              Todos nuestros productos son originales, distribuidos directamente por canales oficiales de Panini. Los envíos viajan con embalaje acolchado especial anti-arrugas para cuidar tu colección.
             </p>
           </div>
 
           <div className="md:col-span-3 space-y-3">
-            <h5 className="font-bold text-slate-700 text-sm uppercase font-mono">Contacto y Soporte</h5>
+            <h5 className="font-extrabold text-white text-xs uppercase font-mono tracking-wider">Contacto y Soporte</h5>
             <div className="flex flex-col gap-3">
-              <p className="text-slate-650">¿Tenés dudas o consultas? Escribinos:</p>
+              <p className="text-slate-400 font-sans">¿Tenés dudas o consultas? Escribinos:</p>
               <a 
                 href="mailto:figukidspanini@gmail.com" 
-                className="inline-flex items-center gap-2 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 text-slate-700 font-semibold p-3 lg:p-2.5 xl:p-3 rounded-2xl border border-slate-200 transition-all shadow-sm group cursor-pointer"
+                className="inline-flex items-center gap-2.5 bg-[#13172e] hover:bg-[#1a203f] hover:text-white text-slate-300 font-semibold p-3 rounded-2xl border border-purple-500/10 transition-all shadow-md group cursor-pointer"
               >
-                <div className="bg-purple-100 group-hover:bg-purple-200 text-purple-600 p-1.5 rounded-xl transition-colors shrink-0">
+                <div className="bg-purple-500/15 group-hover:bg-purple-500/25 text-purple-400 p-1.5 rounded-xl transition-colors shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <span className="truncate font-mono text-xs">figukidspanini@gmail.com</span>
               </a>
 
               <div 
-                className="inline-flex items-center gap-2 bg-slate-50 text-slate-705 p-3 lg:p-2.5 xl:p-3 rounded-2xl border border-slate-200 transition-all shadow-sm"
+                className="inline-flex items-center gap-2.5 bg-[#13172e] text-slate-300 p-3 rounded-2xl border border-purple-500/10 transition-all shadow-md"
               >
-                <div className="bg-orange-100 text-orange-600 p-1.5 rounded-xl shrink-0">
-                  <MapPin className="w-4 h-4 text-orange-600" />
+                <div className="bg-orange-500/15 text-orange-400 p-1.5 rounded-xl shrink-0">
+                  <MapPin className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col text-[10px] text-left leading-normal font-sans">
-                  <span className="font-extrabold text-slate-700">Centro de Envíos:</span>
-                  <span className="font-medium text-slate-600">Jean Jaures 742, Campana, Bs. As.</span>
+                  <span className="font-extrabold text-white">Centro de Envíos:</span>
+                  <span className="font-medium text-slate-400">Cuyo 2414, Martínez, Provincia de Buenos Aires</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto border-t border-slate-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 figukidspanini. Todos los derechos reservados. Desarrollado para fanáticos del deporte rey.</p>
+        <div className="max-w-7xl mx-auto border-t border-purple-500/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+          <p className="font-sans text-slate-500 text-center sm:text-left">© 2026 figukidspanini. Todos los derechos reservados. Desarrollado para fanáticos del deporte rey.</p>
           <div className="flex gap-4">
-            <span className="font-mono text-[10px] text-slate-500">ARGENTINA • MÉXICO • COLOMBIA • ESPAÑA</span>
+            <span className="font-mono text-[10px] text-purple-400/60 uppercase tracking-widest">Argentina • México • Colombia • España</span>
           </div>
         </div>
       </footer>
@@ -1440,19 +1476,6 @@ export default function App() {
                           placeholder="Teléfono / WhatsApp de contacto *"
                           className="w-full bg-white border border-slate-200 font-sans focus:border-orange-500 text-slate-800 placeholder-slate-400 rounded-xl px-3 py-1.5 text-xs outline-none transition-colors"
                         />
-                        <div className="space-y-1">
-                          <input
-                            type="email"
-                            required
-                            value={custEmail}
-                            onChange={(e) => setCustEmail(e.target.value)}
-                            placeholder="Gmail o Correo Electrónico *"
-                            className="w-full bg-white border border-slate-200 font-sans focus:border-orange-500 text-slate-800 placeholder-slate-400 rounded-xl px-3 py-1.5 text-xs outline-none transition-colors"
-                          />
-                          <span className="text-[10px] text-slate-500 block pl-1 font-medium select-none leading-none">
-                            📧 Para el envío de tu factura y comprobante.
-                          </span>
-                        </div>
                         {deliveryMethod === 'envio' && (
                           <div className="space-y-2">
                             <input
